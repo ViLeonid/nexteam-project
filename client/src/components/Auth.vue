@@ -1,36 +1,32 @@
 <template>
   <div class="auth-wrapper">
-
     <div class="auth-container">
       <div class="auth-header">
-        <h2>{{ isLogin ? 'Вход в систему' : 'Регистрация' }}</h2>
-        <p class="subtitle">
-          {{ isLogin ? 'Добро пожаловать назад! Пожалуйста, войдите.' : 'Создайте аккаунт для начала работы.' }}
-        </p>
+        <h2 class="title">{{ isLogin ? 'Вход' : 'Регистрация' }}</h2>
       </div>
 
       <form @submit.prevent="handleAuth" class="auth-form">
         <div class="input-group">
-          <label for="username">Имя пользователя</label>
+          <label for="username">Введите логин:</label>
           <div class="input-wrapper">
             <input 
               id="username"
               v-model="username" 
               type="text" 
-              placeholder="Введите ваш логин" 
+              placeholder="Username" 
               required 
             />
           </div>
         </div>
 
         <div class="input-group">
-          <label for="password">Пароль</label>
+          <label for="password">Введите пароль:</label>
           <div class="input-wrapper">
             <input 
               id="password"
               v-model="password" 
               type="password" 
-              placeholder="••••••••" 
+              placeholder="Password" 
               required 
             />
           </div>
@@ -38,7 +34,6 @@
 
         <transition name="fade">
           <div v-if="error" class="error-msg">
-            <span class="error-icon"></span>
             {{ error }}
           </div>
         </transition>
@@ -49,9 +44,9 @@
       </form>
 
       <div class="auth-footer">
-        <p @click="isLogin = !isLogin" class="toggle-link">
+        <button @click="isLogin = !isLogin" class="secondary-button">
           {{ isLogin ? 'Еще нет аккаунта? Зарегистрируйся' : 'Уже есть аккаунт? Войти' }}
-        </p>
+        </button>
       </div>
     </div>
   </div>
@@ -96,201 +91,137 @@ const handleAuth = async () => {
 </script>
 
 <style scoped>
-/* Импорт шрифта Inter для премиального вида */
-@import url('https://googleapis.com');
-
-/* Общие настройки контейнера */
 .auth-wrapper {
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #0f172a; /* Глубокий темный фон */
-  position: relative;
-  overflow: hidden;
-  padding: 20px;
-}
-
-/* Элементы заднего фона (сферы) */
-.bg-sphere {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 1;
-  opacity: 0.4;
-  animation: float 8s ease-in-out infinite alternate;
-}
-.sphere-1 {
-  width: 300px;
-  height: 300px;
-  background: #6366f1; /* Индиго */
-  top: -50px;
-  right: -50px;
-}
-.sphere-2 {
-  width: 400px;
-  height: 400px;
-  background: #3b82f6; /* Синий */
-  bottom: -100px;
-  left: -100px;
-  animation-delay: -4s;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px) scale(1); }
-  100% { transform: translateY(30px) scale(1.1); }
-}
-
-/* Карточка формы (Glassmorphism) */
-.auth-container {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 420px;
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* Заголовок */
-.auth-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-.auth-header h2 {
-  color: #ffffff;
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
-}
-.subtitle {
-  color: #94a3b8;
-  font-size: 14px;
-  margin: 0;
-}
-
-/* Поля ввода */
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.input-group label {
-  color: #cbd5e1;
-  font-size: 13px;
-  font-weight: 500;
-  padding-left: 4px;
-}
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.input-icon {
-  position: absolute;
-  left: 16px;
-  font-size: 16px;
-  opacity: 0.7;
-}
-.input-wrapper input {
-  width: 100%;
-  padding: 14px 16px 14px 20px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 15px;
-  transition: all 0.3s ease;
+  width: 100vw;
+  height: 100vh;
+  font-family: sans-serif;
+  background-color: #000000;
   box-sizing: border-box;
 }
-.input-wrapper input:focus {
-  outline: none;
-  border-color: #6366f1;
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-}
-.input-wrapper input::placeholder {
-  color: #64748b;
-}
 
-/* Кнопка */
-.submit-btn {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  border: none;
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  margin-top: 8px;
-}
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-}
-.submit-btn:active {
-  transform: translateY(0);
-}
-
-/* Ошибка */
-.error-msg {
+.auth-container {
+  width: 90vw;
+  max-width: 400px;
+  padding: 40px 20px;
+  border-radius: 2em;
+  background-color: #ffffff;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 14px;
+  box-sizing: border-box;
 }
 
-/* Ссылка переключения */
-.auth-footer {
+.auth-header {
+  width: 100%;
   text-align: center;
-  margin-top: 24px;
 }
-.toggle-link {
-  color: #94a3b8;
-  font-size: 14px;
+
+.title {
+  text-align: center;
+  font-size: 2.5em;
+  font-family: 'Gill Sans', sans-serif;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #000000;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input-group label {
+  color: #333333;
+  margin: 10px 0 5px 0;
+  width: 85%;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.input-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.input-wrapper input {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  width: 85%;
+  height: 50px;
+  border-radius: 2em;
+  padding: 0 1.2em;
+  background-color: #4f4f4f;
+  border: 1px solid #cccccc;
+  box-sizing: border-box; 
+  outline: none;
+  color: #ffffff; 
+}
+
+.submit-btn {
+  width: 85%;
+  height: 50px;
+  margin-top: 10px;
+  border-radius: 2em;
+  border: none;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 1.1rem;
   cursor: pointer;
-  display: inline-block;
-  transition: color 0.2s ease;
-  user-select: none;
+  transition: 0.3s;
 }
-.toggle-link:hover {
-  color: #6366f1;
+
+.submit-btn:hover {
+  background-color: #333333;
+}
+
+.error-msg {
+  color: red;
+  margin: 5%;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.secondary-button {
+  background-color: transparent !important;
+  border: none;
+  color: #666666 !important;
+  font-size: 0.9rem !important;
   text-decoration: underline;
+  margin-top: 20px;
+  cursor: pointer;
 }
 
-/* Анимации для плавного появления ошибок (Vue Transitions) */
-.fade-enter-active, .fade-leave-active {
-  transition: all 0.3s ease;
+.secondary-button:hover {
+  color: #000000 !important;
 }
-.fade-enter-from, .fade-leave-to {
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 480px) {
-  .auth-container {
-    padding: 32px 24px;
-  }
 }
 </style>

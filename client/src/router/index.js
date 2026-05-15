@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
   } else if (to.meta.requiresGuest && isAuthenticated) {
     next('/')
   } else {
-    next() // ИСПРАВЛЕНО: пустой вызов разрешает переход и останавливает цикл
+    next()
   }
 })
 

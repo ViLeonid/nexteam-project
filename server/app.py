@@ -1,4 +1,5 @@
-import uuid
+import uuid, os
+from dotenv import load_dotenv
 from datetime import datetime
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
@@ -6,15 +7,16 @@ from flask_sqlalchemy import SQLAlchemy
 from gigachat import GigaChat
 from werkzeug.security import generate_password_hash, check_password_hash
 
+load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'super_secret_batman_key'
+app.secret_key = os.getenv("SECRET_KEY")
 
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 db = SQLAlchemy(app)
-giga = GigaChat(credentials="MDE5ZGRhMzYtODYwZC03MTg5LWEyODQtMmI1NjNmOWU0NWZkOmE0ZDlmYTcwLTFmMTctNDIxZi04ZmFmLWNmZjM1ZTEwYmE4MQ==", scope="GIGACHAT_API_PERS", verify_ssl_certs=False)
+giga = GigaChat(credentials=os.getenv("GIGACHAT_CREDENTIALS"), scope="GIGACHAT_API_PERS", verify_ssl_certs=False)
 
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
@@ -203,4 +205,4 @@ def single_todo(todo_id):
         return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=os.getenv("DEBUG"))

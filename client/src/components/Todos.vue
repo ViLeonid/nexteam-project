@@ -246,9 +246,7 @@ const toggleDone = (todo) => {
 }
 
 const deleteTodo = (id) => {
-  if (confirm("Удалить задачу?")) {
-    axios.delete(`http://localhost:5000/todos/${id}`).then(() => getTodos());
-  }
+  axios.delete(`http://localhost:5000/todos/${id}`).then(() => getTodos());
 }
 
 const openEditModal = (todo) => {

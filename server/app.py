@@ -9,9 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'super_secret_batman_key' # ИСПРАВЛЕНО: Ключ для шифрования сессий
+app.secret_key = 'super_secret_batman_key'
 
-# ИСПРАВЛЕНО: Настройка CORS для работы с куками авторизации Vue
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 db = SQLAlchemy(app)

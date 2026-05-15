@@ -251,22 +251,3 @@ POST /api/events
 
 ---
 
-# Screenshots
-
-Добавь сюда screenshots интерфейса:
-
-```md
-![Dashboard](./screenshots/dashboard.png)
-```
-
----
-
-# Автор
-
-Developed by Nexteam.
-
----
-
-# License
-
-MIT License

@@ -21,7 +21,7 @@
 
         <div class="input-group">
           <label for="password">Введите пароль:</label>
-          <div class="input-wrapper">
+          <div class="input-wrapper"  style="margin-bottom: -0.8rem;">
             <input 
               id="password"
               v-model="password" 
@@ -30,6 +30,7 @@
               required 
             />
           </div>
+          <div class="password-hint" v-show="!isLogin">Пароль состоит из не менее 10 символов, содержит заглавную букву, строчную букву, цифру</div>
         </div>
 
         <transition name="fade">
@@ -119,7 +120,10 @@ const handleAuth = async () => {
   width: 100%;
   text-align: center;
 }
-
+.password-hint[style*="display: none"] {
+  display: block !important; /* Отменяем скрытие через display */
+  visibility: hidden; /* Делаем элемент полностью невидимым, но сохраняем его место */
+}
 .title {
   text-align: center;
   font-size: 2.5em;
@@ -128,7 +132,17 @@ const handleAuth = async () => {
   margin-bottom: 20px;
   color: #000000;
 }
-
+.password-hint {
+  width: 85%; /* Точная ширина инпута */
+  font-size: 0.75rem; /* Читаемый мелкий шрифт вместо 0.5rem */
+  color: #666666; /* Нейтральный серый цвет */
+  text-align: left; /* Выравнивание по левому краю инпута */
+  margin-top: 0.1rem; /* Небольшой отступ сверху от инпута */
+  padding-left: 0.5rem;
+  margin-bottom: 1rem; /* Отступ снизу до кнопки/ошибки */
+  white-space: normal; /* Разрешение переноса текста */
+  word-wrap: break-word; /* Защита от выламывания длинных слов */
+}
 .auth-form {
   width: 100%;
   display: flex;

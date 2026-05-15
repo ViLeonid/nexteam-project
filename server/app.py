@@ -1,4 +1,4 @@
-import uuid, os
+import uuid, os, re
 from dotenv import load_dotenv
 from datetime import datetime
 from flask import Flask, jsonify, request, session
@@ -11,7 +11,11 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.secret_key = os.getenv("SECRET_KEY")
+debug_mode = os.getenv("DEBUG") == "True"
 
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
@@ -52,6 +56,22 @@ class Event(db.Model):
 with app.app_context():
     db.create_all()
 
+def validate_password(password):
+
+    if len(password) < 10:
+        return False
+
+    if not re.search(r'[A-Z]', password) and not re.search(r'[А-Я]', password):
+        return False
+
+    if not re.search(r'[a-z]', password) and not re.search(r'[а-я]', password):
+        return False
+
+    if not re.search(r'\d', password):
+        return False
+
+    return True
+
 def parse_datetime(dt_str):
     if not dt_str:
         return None
@@ -68,10 +88,10 @@ def register():
     
     if not username or not password:
         return jsonify({"error": "Заполните все поля"}), 400
-        
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "Этот никнейм уже занят"}), 400
-        
+    if not validate_password(password):
+        return jsonify({"error": "Пароль не соответсвует требованиям"}), 400
     hashed_password = generate_password_hash(password)
     new_user = User(username=username, password=hashed_password)
     db.session.add(new_user)
@@ -205,4 +225,4 @@ def single_todo(todo_id):
         return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv("DEBUG"))
+    app.run(debug=debug_mode)

@@ -24,12 +24,21 @@
       <button @click="submitEvent" class="custom-button">Добавить блок</button>
     </div>
 
-    <!-- Компонент календаря -->
-    <div class="calendar-container-fixed">
-      <Qalendar :events="allCalendarBlocks" :config="config" />
-    </div>
+    <!-- Компонент календаря с обработчиком клика по времени -->
+    <!-- Компонент календаря с обработчиками -->
+  <div class="calendar-container-fixed">
+    <Qalendar 
+      :events="allCalendarBlocks" 
+      :config="config" 
+      @datetime-was-clicked="handleCalendarClick"
+      @event-was-resized="syncUpdatedEvent"
+      @event-was-dragged="syncUpdatedEvent"
+    />
+  </div>
+
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
@@ -41,18 +50,23 @@ axios.defaults.withCredentials = true;
 const todos = ref([]);
 const customEvents = ref([]);
 
-const newEvent = ref({
+// Чистый объект для сброса формы
+const initialEventState = {
   title: "",
   description: "",
   start_time: "",
   end_time: "",
   color: "blue"
-});
+};
+
+const newEvent = ref({ ...initialEventState });
+const draftEventId = "draft-event-id"; // Фиксированный ID для черновика
 
 const config = ref({
   locale: "ru-RU",
-  defaultMode: "week", // Оставляем режим недели
+  defaultMode: "week",
   showCurrentTime: true,
+  isInteractive: true, // Включает возможность перетаскивания и растягивания блоков
   style: {
     colorSchemes: {
       blue: { color: '#ffffff', backgroundColor: 'rgba(59, 130, 246, 0.15)', border: '4px solid #3b82f6' },
@@ -70,6 +84,56 @@ const formatTime = (dateTimeStr) => {
   return dateTimeStr.replace("T", " ");
 };
 
+const formatToInputDateTime = (date) => {
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date - tzOffset).toISOString().slice(0, 16);
+};
+
+// Клик по пустой ячейке: создаем черновик прямо в массиве событий
+const handleCalendarClick = (timeString) => {
+  const isoString = timeString.replace(" ", "T");
+  const startDate = new Date(isoString);
+  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 час по умолчанию
+
+  // Заполняем форму слева
+  newEvent.value.title = newEvent.value.title || "Новое событие";
+  newEvent.value.start_time = isoString;
+  newEvent.value.end_time = formatToInputDateTime(endDate);
+
+  // Удаляем старый черновик, если он был, чтобы не плодить копии
+  customEvents.value = customEvents.value.filter(ev => ev.id !== draftEventId);
+
+  // Пушим черновик в основной массив для интерактива
+  customEvents.value.push({
+    id: draftEventId,
+    title: newEvent.value.title,
+    description: newEvent.value.description,
+    start_time: newEvent.value.start_time,
+    end_time: newEvent.value.end_time,
+    color: newEvent.value.color
+  });
+};
+
+// Функция синхронизации: когда подергали блок на календаре, обновляем форму и массив
+const syncUpdatedEvent = (updatedEvent) => {
+  const startISO = updatedEvent.time.start.replace(" ", "T");
+  const endISO = updatedEvent.time.end.replace(" ", "T");
+
+  // Если это наш черновик — обновляем форму слева
+  if (updatedEvent.id === draftEventId) {
+    newEvent.value.start_time = startISO;
+    newEvent.value.end_time = endISO;
+  }
+
+  // Обновляем объект внутри массива customEvents
+  const target = customEvents.value.find(ev => ev.id === updatedEvent.id || `event-${ev.id}` === updatedEvent.id);
+  if (target) {
+    target.start_time = startISO;
+    target.end_time = endISO;
+  }
+};
+
+// Сюда транслируется массив для отображения
 const allCalendarBlocks = computed(() => {
   const mappedTodos = todos.value
     .filter(todo => todo.deadline)
@@ -86,12 +150,12 @@ const allCalendarBlocks = computed(() => {
     });
 
   const mappedEvents = customEvents.value.map(ev => ({
-    id: `event-${ev.id}`,
-    title: ev.title,
-    description: ev.description,
+    id: ev.id === draftEventId ? draftEventId : `event-${ev.id}`,
+    title: ev.id === draftEventId ? newEvent.value.title : ev.title, // Синхроним ввод текста на лету
+    description: ev.id === draftEventId ? newEvent.value.description : ev.description,
     time: { start: formatTime(ev.start_time), end: formatTime(ev.end_time) },
-    color: ev.color,
-    isEditable: true
+    color: ev.id === draftEventId ? newEvent.value.color : ev.color,
+    isEditable: true // Разрешаем редактирование и растягивание
   }));
 
   return [...mappedTodos, ...mappedEvents];
@@ -116,9 +180,18 @@ const submitEvent = async () => {
     return;
   }
   try {
-    await axios.post('http://localhost:5000/api/events', newEvent.value);
-    newEvent.value = { title: "", description: "", start_time: "", end_time: "", color: "blue" };
-    await loadData();
+    // Отправляем чистый объект без временного id
+    const payload = {
+      title: newEvent.value.title,
+      description: newEvent.value.description,
+      start_time: newEvent.value.start_time,
+      end_time: newEvent.value.end_time,
+      color: newEvent.value.color
+    };
+    
+    await axios.post('http://localhost:5000/api/events', payload);
+    newEvent.value = { ...initialEventState };
+    await loadData(); // Перезагрузит данные, затерев временный черновик
   } catch (error) {
     console.error("Ошибка сохранения события:", error);
   }
@@ -126,6 +199,7 @@ const submitEvent = async () => {
 
 onMounted(loadData);
 </script>
+
 
 <style>
 @import "qalendar/dist/style.css";

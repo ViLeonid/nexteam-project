@@ -6,7 +6,7 @@
     <div class="main-wrapper">
       <div class="container py-5">
         <div class="text-center mb-5">
-          <h1 class="fw-bold display-5 text-dark">System.Tasks</h1>
+          <h1 class="fw-bold display-5 text-dark">Задачи</h1>
           <p class="text-muted">Управление задачами и дедлайнами</p>
         </div>
 

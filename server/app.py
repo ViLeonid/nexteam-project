@@ -1,6 +1,6 @@
 import uuid, os, re
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -27,7 +27,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     todos = db.relationship('Todo', backref='user', lazy=True, cascade="all, delete-orphan")
-
+    events = db.relationship('Event', backref='user', lazy=True, cascade="all, delete-orphan")
 class Todo(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
     title = db.Column(db.String(100), nullable=False)
@@ -45,9 +45,10 @@ class Event(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     color = db.Column(db.String(20), default="blue")   # Кастомный цвет для событий
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
-
+    todo_id = db.Column(db.String(36), db.ForeignKey('todo.id', ondelete="CASCADE"), nullable=True)
+    todo = db.relationship('Todo', backref=db.backref('event', uselist=False, cascade="all, delete-orphan"))
 # 2. Добавьте связь в модель User (внутри класса User)
-# events = db.relationship('Event', backref='user', lazy=True, cascade="all, delete-orphan")
+# 
 
 # 3. Создайте роут для получения и создания событий
 
@@ -112,9 +113,12 @@ def login():
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    session.pop('user_id', None)
     session.clear() # Полностью очищаем сессию на сервере
     return jsonify({"status": "success"})
+
+
+
+
 
 @app.route('/api/events', methods=['GET', 'POST'])
 def handle_events():
@@ -136,7 +140,6 @@ def handle_events():
         db.session.commit()
         return jsonify({'status': 'success', 'id': new_event.id}), 201
 
-    # GET запрос: получаем события пользователя
     events = Event.query.filter_by(user_id=current_user_id).all()
     output = []
     for ev in events:
@@ -152,7 +155,6 @@ def handle_events():
 
 @app.route('/todos', methods=['GET', 'POST'])
 def handle_todos():
-    # ИСПРАВЛЕНО: Защита роута и получение id текущего юзера
     current_user_id = session.get('user_id')
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
@@ -167,7 +169,17 @@ def handle_todos():
                 deadline=parse_datetime(data.get('deadline')),
                 user_id=current_user_id # ИСПРАВЛЕНО: Передаем обязательный внешний ключ
             )
+            new_event = Event(
+                title=data.get('title'),
+                description=data.get('description'),
+                start_time=parse_datetime(data.get('deadline')),
+                end_time=parse_datetime(data.get('deadline')) + timedelta(hours=1),
+                color='blue',
+                user_id=current_user_id,
+                todo=new_todo
+            )
             db.session.add(new_todo)
+            db.session.add(new_event)
             db.session.commit()
         else:
             subject = data.get('subject')
@@ -184,7 +196,17 @@ def handle_todos():
                 deadline=parse_datetime(data.get('deadline')),
                 user_id=current_user_id # ИСПРАВЛЕНО: Передаем обязательный внешний ключ
             )
+            new_event = Event(
+                title=title_text,
+                description=content,
+                start_time=parse_datetime(data.get('deadline')),
+                end_time=parse_datetime(data.get('deadline')) + timedelta(hours=1),
+                color='purple',
+                user_id=current_user_id,
+                todo=new_todo
+            )
             db.session.add(new_todo)
+            db.session.add(new_event)
             db.session.commit()
         return jsonify({'status': 'success'})
     
@@ -206,16 +228,25 @@ def single_todo(todo_id):
     current_user_id = session.get('user_id')
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
-        
+
     todo = Todo.query.filter_by(id=todo_id, user_id=current_user_id).first_or_404()
-    
     if request.method == 'PUT':
         data = request.get_json()
-        todo.title = data.get('title', todo.title)
+        new_title=data.get('title')
+        if not new_title or new_title.strip() == "":
+            return jsonify({"error": "Название задачи не может быть пустым"}), 400
+        todo.title = new_title
         todo.description = data.get('description', todo.description)
         todo.is_done = data.get('is_done', todo.is_done)
         if 'deadline' in data:
             todo.deadline = parse_datetime(data.get('deadline'))
+        if todo.event:
+            todo.event.title = todo.title
+            todo.event.description = todo.description
+            if todo.deadline:
+                todo.event.start_time = todo.deadline
+                todo.event.end_time = todo.deadline + timedelta(hours=1)
+        
         db.session.commit()
         return jsonify({'status': 'success'})
     
@@ -223,6 +254,9 @@ def single_todo(todo_id):
         db.session.delete(todo)
         db.session.commit()
         return jsonify({'status': 'success'})
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=debug_mode)

@@ -28,8 +28,7 @@ const handleLogout = async () => {
       <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar p-0 shadow min-vh-100 position-fixed d-flex flex-column justify-content-between">
         <div class="position-sticky pt-3 w-100">
           <div class="px-4 py-3 text-white">
-            <h4 class="fw-bold m-0">NexTeam</h4>
-            <small class="text-secondary">v1.0.4 — Python 3.14</small>
+            <h2 class="m-0">OnOlympUs</h2>
           </div>
           
           <hr class="text-secondary mx-3">

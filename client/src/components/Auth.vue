@@ -7,7 +7,7 @@
 
       <form @submit.prevent="handleAuth" class="auth-form">
         <div class="input-group">
-          <label for="username">Введите логин:</label>
+          <label class="txt" for="username">Введите логин:</label>
           <div class="input-wrapper">
             <input 
               id="username"
@@ -20,7 +20,7 @@
         </div>
 
         <div class="input-group">
-          <label for="password">Введите пароль:</label>
+          <label class="txt" for="password">Введите пароль:</label>
           <div class="input-wrapper"  style="margin-bottom: -0.8rem;">
             <input 
               id="password"
@@ -100,7 +100,9 @@ const handleAuth = async () => {
   width: 100vw;
   height: 100vh;
   font-family: sans-serif;
-  background-color: #000000;
+  background-image: url('@/assets/bg2.png');
+  background-size: cover;
+  background-position: center;
   box-sizing: border-box;
 }
 
@@ -109,7 +111,11 @@ const handleAuth = async () => {
   max-width: 400px;
   padding: 40px 20px;
   border-radius: 2em;
-  background-color: #ffffff;
+  background: rgba(31, 31, 31, 0.7); 
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid rgba(123, 123, 123, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -130,7 +136,7 @@ const handleAuth = async () => {
   font-family: 'Gill Sans', sans-serif;
   margin-top: 0;
   margin-bottom: 20px;
-  color: #000000;
+  color: #ffffff;
 }
 .password-hint {
   width: 85%; /* Точная ширина инпута */
@@ -158,7 +164,7 @@ const handleAuth = async () => {
 }
 
 .input-group label {
-  color: #333333;
+  color: #d9d9d9;
   margin: 10px 0 5px 0;
   width: 85%;
   text-align: left;
@@ -218,7 +224,7 @@ const handleAuth = async () => {
 .secondary-button {
   background-color: transparent !important;
   border: none;
-  color: #666666 !important;
+  color: #9c9c9c !important;
   font-size: 0.9rem !important;
   text-decoration: underline;
   margin-top: 20px;

@@ -174,7 +174,7 @@ def handle_todos():
                 description=data.get('description'),
                 start_time=parse_datetime(data.get('deadline')),
                 end_time=parse_datetime(data.get('deadline')) + timedelta(hours=1),
-                color='blue',
+                color='red',
                 user_id=current_user_id,
                 todo=new_todo
             )
@@ -228,7 +228,6 @@ def single_todo(todo_id):
     current_user_id = session.get('user_id')
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
-
     todo = Todo.query.filter_by(id=todo_id, user_id=current_user_id).first_or_404()
     if request.method == 'PUT':
         data = request.get_json()
@@ -246,7 +245,7 @@ def single_todo(todo_id):
             if todo.deadline:
                 todo.event.start_time = todo.deadline
                 todo.event.end_time = todo.deadline + timedelta(hours=1)
-        
+        todo.event.color = 'green' if todo.is_done else 'red'
         db.session.commit()
         return jsonify({'status': 'success'})
     
@@ -255,7 +254,90 @@ def single_todo(todo_id):
         db.session.commit()
         return jsonify({'status': 'success'})
 
+@app.route('/api/events/<event_id>', methods=['DELETE'])
+def single_event(event_id):
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+    event = Event.query.filter_by(id=event_id, user_id=current_user_id).first_or_404()
+    todo = event.todo
 
+    if request.method == 'DELETE':
+        db.session.delete(event)
+        if todo:
+            db.session.delete(todo)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    
+@app.route('/api/analytics/today', methods=['GET'])
+def get_today_analytics():
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    # 1. Определяем границы текущего дня (от 00:00:00 до 23:59:59)
+    now = datetime.now()
+    today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
+    today_end = datetime(now.year, now.month, now.day, 23, 59, 59)
+
+    # 2. Берем события пользователя, которые начинаются СЕГОДНЯ
+    events = Event.query.filter(
+        Event.user_id == current_user_id,
+        Event.start_time >= today_start,
+        Event.start_time <= today_end
+    ).all()
+
+    if not events:
+        return jsonify({
+            "labels": ["Свободный день"],
+            "values": [24],
+            "colors": ["#1f293d"]  # Темный пустой сектор вместо серого
+        })
+
+    # Карта цветов для категорий
+        # Карта неоновых цветов
+    color_map = {
+        "blue": {"label": "Обычные дела", "hex": "#00f0ff"},     # Электрический циан
+        "red": {"label": "Дедлайны / Задачи", "hex": "#ff007f"},  # Неоновый розовый
+        "purple": {"label": "Задачи от ИИ", "hex": "#a020f0"}    # Неоновый фиолетовый
+    }
+
+    
+
+
+    # Словарь для суммирования часов по категориям
+    # Пример: { "blue": 2.5, "red": 1.0 }
+    duration_stats = {}
+
+    for ev in events:
+        color_name = ev.color if ev.color in color_map else "blue"
+        
+        # Считаем длительность события в часах
+        duration_timedelta = ev.end_time - ev.start_time
+        duration_hours = duration_timedelta.total_seconds() / 3600.0
+        
+        # Если событие внезапно имеет некорректное время, берем минимум 30 минут
+        if duration_hours <= 0:
+            duration_hours = 0.5 
+
+        duration_stats[color_name] = duration_stats.get(color_name, 0.0) + duration_hours
+
+    # 3. Собираем списки для фронтенда
+    labels = []
+    values = []
+    colors = []
+
+    for color_name, hours in duration_stats.items():
+        labels.append(color_map[color_name]["label"])
+        # Округляем часы до 1 знака после запятой (например, 1.5 часа)
+        values.append(round(hours, 1))
+        colors.append(color_map[color_name]["hex"])
+
+    return jsonify({
+        "labels": labels,
+        "values": values,
+        "colors": colors
+    })
 
 
 if __name__ == '__main__':

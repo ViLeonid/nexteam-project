@@ -49,6 +49,11 @@ const handleLogout = async () => {
                   <i class="bi bi-book me-2"></i> Расписание
                 </router-link>
               </li>
+              <li class="nav-item">
+                <router-link to="/analytics" class="nav-link" active-class="active">
+                  <i class="bi bi-book me-2"></i> Аналитика
+                </router-link>
+              </li>
             </ul>
 
             <hr class="text-secondary mx-3">

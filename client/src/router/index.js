@@ -3,6 +3,7 @@ import Todos from '../components/Todos.vue'
 import Auth from '../components/Auth.vue'
 import Schedule from '../components/Schedule.vue'
 import MainLayout from '@/components/MainLayout.vue'
+import Analytics from '@/components/Analytics.vue'
 
 
 const router = createRouter({
@@ -22,6 +23,12 @@ const router = createRouter({
           path: 'schedule',
           name: 'Schedule',
           component: Schedule,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'analytics',
+          name: 'Analytics',
+          component: Analytics,
           meta: { requiresAuth: true }
         }
       ]

@@ -17,7 +17,9 @@
           <option value="blue">Синий</option>
           <option value="yellow">Желтый</option>
           <option value="purple">Фиолетовый</option>
-          <option value="orange">Оранжевый</option>
+          <option value="orange">Оранжевый</option>=
+          <option value="red">Красный</option>
+          <option value="green">Зелёный</option>
         </select>
       </label>
 
@@ -26,15 +28,16 @@
 
     <!-- Компонент календаря с обработчиком клика по времени -->
     <!-- Компонент календаря с обработчиками -->
-  <div class="calendar-container-fixed">
-    <Qalendar 
-      :events="allCalendarBlocks" 
-      :config="config" 
-      @datetime-was-clicked="handleCalendarClick"
-      @event-was-resized="syncUpdatedEvent"
-      @event-was-dragged="syncUpdatedEvent"
-    />
-  </div>
+    <div class="calendar-container-fixed">
+      <Qalendar 
+        :events="allCalendarBlocks" 
+        :config="config" 
+        @datetime-was-clicked="handleCalendarClick"
+        @event-was-resized="syncUpdatedEvent"
+        @event-was-dragged="syncUpdatedEvent"
+        @delete-event="handleDeleteEvent"
+      />
+    </div>
 
   </div>
 </template>
@@ -135,31 +138,27 @@ const syncUpdatedEvent = (updatedEvent) => {
 
 // Сюда транслируется массив для отображения
 const allCalendarBlocks = computed(() => {
-  const mappedTodos = todos.value
-    .filter(todo => todo.deadline)
-    .map(todo => {
-      const formattedDeadline = formatTime(todo.deadline);
-      return {
-        id: `todo-${todo.id}`,
-        title: `📌 ${todo.title}`,
-        description: todo.description,
-        time: { start: formattedDeadline, end: formattedDeadline },
-        color: todo.is_done ? "green" : "red",
-        isEditable: true
-      };
-    });
-
   const mappedEvents = customEvents.value.map(ev => ({
     id: ev.id === draftEventId ? draftEventId : `event-${ev.id}`,
     title: ev.id === draftEventId ? newEvent.value.title : ev.title, // Синхроним ввод текста на лету
     description: ev.id === draftEventId ? newEvent.value.description : ev.description,
     time: { start: formatTime(ev.start_time), end: formatTime(ev.end_time) },
-    color: ev.id === draftEventId ? newEvent.value.color : ev.color,
+    colorScheme: ev.id === draftEventId ? newEvent.value.color : ev.color,
     isEditable: true // Разрешаем редактирование и растягивание
   }));
+  console.log('events',mappedEvents);
 
-  return [...mappedTodos, ...mappedEvents];
+  return mappedEvents;
 });
+const handleDeleteEvent = async (event) => {
+  const id = event.replace("event-","")
+  console.log(id);
+  await axios.delete(
+    `http://localhost:5000/api/events/${id}`
+  );
+
+  await loadData();
+};
 
 const loadData = async () => {
   try {

@@ -22,8 +22,10 @@
           <option value="green">Зелёный</option>
         </select>
       </label>
-
-      <button @click="submitEvent" class="custom-button">Добавить блок</button>
+      <div style="display:flex">
+        <button @click="submitEvent" class="submit-button">Добавить</button>
+        <button @click="cancelEvent" class="cancel-button">Отмена</button>
+      </div>
     </div>
 
     <!-- Компонент календаря с обработчиком клика по времени -->
@@ -228,7 +230,6 @@ onMounted(loadData);
   box-sizing: border-box;
   height: fit-content;
 }
-
 .custom-event-form h3 {
   margin: 0 0 4px 0;
   color: #ffffff;
@@ -277,7 +278,7 @@ onMounted(loadData);
 }
 
 /* Красивая кнопка */
-.custom-button {
+.submit-button {
   width: 100%;
   padding: 12px;
   background-color: #2563eb;
@@ -291,12 +292,26 @@ onMounted(loadData);
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
-.custom-button:hover {
+.submit-button:hover {
   background-color: #1d4ed8;
 }
 
-.custom-button:active {
+.submit-button:active {
   transform: scale(0.98);
+}
+
+.cancel-button{
+  width: 100%;
+  padding: 12px;
+  background-color: #585858;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 4px 6px -1px rgba(85, 85, 85, 0.2);
 }
 
 /* Контейнер календаря */

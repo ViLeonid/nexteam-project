@@ -535,6 +535,24 @@ def get_today_analytics():
         "colors": colors
     })
 
+@app.route('/olympiads', methods=['GET'])
+def olympiads():
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+    all_olympiads = Olympiads.query.filter_by().all()
+    output = []
+    for this_olympiad in all_olympiads:
+            output.append({
+                    "id": this_olympiad.id,
+                    "title": this_olympiad.title,
+                    "subjects": this_olympiad.subjects,
+                    "dates": this_olympiad.dates,
+                    "classes": this_olympiad.classes,
+                    "url": this_olympiad.url,
+                    "level_perechnya": this_olympiad.level_perechnya
+                })
+    return jsonify({'status': 'success', 'olympiads': output})
 
 @app.route('/api/olympiads/parse', methods=['POST'])
 def olympiad_parser():

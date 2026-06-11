@@ -4,7 +4,7 @@ import Auth from '../components/Auth.vue'
 import Schedule from '../components/Schedule.vue'
 import MainLayout from '@/components/MainLayout.vue'
 import Analytics from '@/components/Analytics.vue'
-import Olimpiads from '@/components/Olimpiads.vue'
+import Olympiads from '@/components/Olympiads.vue'
 
 
 const router = createRouter({
@@ -27,9 +27,9 @@ const router = createRouter({
           meta: { requiresAuth: true }
         },
         {
-          path: 'olimpiads',
-          name: 'Olimpiads',
-          component: Olimpiads,
+          path: 'olympiads',
+          name: 'Olympiads',
+          component: Olympiads,
           meta: { requiresAuth: true }
         },
         {

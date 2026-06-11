@@ -31,6 +31,7 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     todos = db.relationship('Todo', backref='user', lazy=True, cascade="all, delete-orphan")
     events = db.relationship('Event', backref='user', lazy=True, cascade="all, delete-orphan")
+
 class Todo(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
     title = db.Column(db.String(100), nullable=False)
@@ -48,9 +49,10 @@ class Event(db.Model):
     color = db.Column(db.String(20), default="blue")
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     todo_id = db.Column(db.String(36), db.ForeignKey('todo.id', ondelete="CASCADE"), nullable=True)
+    olympiad_id = db.Column(db.String(36), db.ForeignKey('olympiads.id', ondelete="CASCADE"), nullable=True)
     todo = db.relationship('Todo', backref=db.backref('event', uselist=False, cascade="all, delete-orphan"))
 
-class Olimpiads(db.Model):
+class Olympiads(db.Model):
     id = db.Column(db.String(10), primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     subjects = db.Column(MutableList.as_mutable(db.JSON), default=list)
@@ -90,6 +92,53 @@ def parse_datetime(dt_str):
         return None
     
 
+def map_date(i):
+    x=[]
+    for j in i.split(' '):
+        for k in j.split('-'):
+            x.append(k)
+    months={
+        'янв': 1,
+        'фев': 2,
+        'мар': 3,
+        'апр': 4,
+        'мая': 5,
+        'июн': 6,
+        'июл': 7,
+        'авг': 8,
+        'сен': 9,
+        'окт': 10,
+        'ноя': 11,
+        'дек': 12
+    }
+    if len(x) == 2:
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        if current_month <= months[x[1]]:
+            return [parse_datetime(str(current_year)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'23:59')]
+        else:
+            return [parse_datetime(str(current_year+1)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year+1)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'23:59')]
+    if len(x) == 3:
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        if current_month <= months[x[2]]:
+            return [parse_datetime(str(current_year)+'-'+str(months[x[2]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year)+'-'+str(months[x[2]])+'-'+x[1]+'T'+'23:59')]
+        else:
+            return [parse_datetime(str(current_year+1)+'-'+str(months[x[2]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year+1)+'-'+str(months[x[2]])+'-'+x[1]+'T'+'23:59')]
+    if len(x) == 4:
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        if current_month <= months[x[1]]:
+            if current_month <= months[x[3]]:
+                return [parse_datetime(str(current_year)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year)+'-'+str(months[x[3]])+'-'+x[2]+'T'+'23:59')]
+            else:
+                return [parse_datetime(str(current_year)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year+1)+'-'+str(months[x[3]])+'-'+x[2]+'T'+'23:59')]
+        else:
+            if current_month <= months[x[3]]:
+                return [parse_datetime(str(current_year)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year)+'-'+str(months[x[3]])+'-'+x[2]+'T'+'23:59')]
+            else:
+                return [parse_datetime(str(current_year+1)+'-'+str(months[x[1]])+'-'+x[0]+'T'+'00:00'), parse_datetime(str(current_year+1)+'-'+str(months[x[3]])+'-'+x[2]+'T'+'23:59')]
+
 
 
 
@@ -104,7 +153,7 @@ def parse_olympiads(limit):
         )
     }
     for activity_id in range(1, limit+1):
-        if not Olimpiads.query.filter_by(id=activity_id).first():
+        if not Olympiads.query.filter_by(id=activity_id).first():
 
             try:
                 url = f"https://olimpiada.ru/activity/{activity_id}"
@@ -182,7 +231,7 @@ def parse_olympiads(limit):
                             break # Выходим из цикла, если нашли
 
 
-                olimpiad = Olimpiads(
+                olympiad = Olympiads(
                     id = activity_id,
                     title = olympiad_name,
                     subjects = subjects,
@@ -191,17 +240,17 @@ def parse_olympiads(limit):
                     url = olympiad_site,
                     level_perechnya = level_perechnya
                 )
-                db.session.add(olimpiad)
+                db.session.add(olympiad)
                 db.session.commit()    
-                this_olimpiad = Olimpiads.query.filter_by(id=activity_id).first()
+                this_olympiad = Olympiads.query.filter_by(id=activity_id).first()
                 output_olympiads.append({
-                    "id": this_olimpiad.id,
-                    "title": this_olimpiad.title,
-                    "subjects": this_olimpiad.subjects,
-                    "dates": this_olimpiad.dates,
-                    "classes": this_olimpiad.classes,
-                    "url": this_olimpiad.url,
-                    "level_perechnya": this_olimpiad.level_perechnya
+                    "id": this_olympiad.id,
+                    "title": this_olympiad.title,
+                    "subjects": this_olympiad.subjects,
+                    "dates": this_olympiad.dates,
+                    "classes": this_olympiad.classes,
+                    "url": this_olympiad.url,
+                    "level_perechnya": this_olympiad.level_perechnya
                 })
                 print(f'{ activity_id } parsed')
 
@@ -209,15 +258,15 @@ def parse_olympiads(limit):
                 print(activity_id, e)
         else:
             print(f'{ activity_id } was not parsed')
-            this_olimpiad = Olimpiads.query.filter_by(id=activity_id).first()
+            this_olympiad = Olympiads.query.filter_by(id=activity_id).first()
             output_olympiads.append({
-                    "id": this_olimpiad.id,
-                    "title": this_olimpiad.title,
-                    "subjects": this_olimpiad.subjects,
-                    "dates": this_olimpiad.dates,
-                    "classes": this_olimpiad.classes,
-                    "url": this_olimpiad.url,
-                    "level_perechnya": this_olimpiad.level_perechnya
+                    "id": this_olympiad.id,
+                    "title": this_olympiad.title,
+                    "subjects": this_olympiad.subjects,
+                    "dates": this_olympiad.dates,
+                    "classes": this_olympiad.classes,
+                    "url": this_olympiad.url,
+                    "level_perechnya": this_olympiad.level_perechnya
                 })
     return output_olympiads
 
@@ -496,5 +545,26 @@ def olympiad_parser():
     olympiads = parse_olympiads(int(data.get('count')))
     return jsonify({"status": "success","olympiads": olympiads})
 
+@app.route('/add_olympiad/<olympiad_id>', methods=['POST'])
+def add_olympiad(olympiad_id):
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+    olympiad = Olympiads.query.filter_by(id = olympiad_id).first()
+
+    for date in olympiad.dates:
+        new_event = Event(
+            title=olympiad.title,
+            description=date['stage'],
+            start_time=map_date(date['date'])[0],
+            end_time=map_date(date['date'])[1],
+            color='orange',
+            olympiad_id = olympiad.id,
+            user_id=current_user_id
+        )
+        db.session.add(new_event)
+    db.session.commit()
+    return jsonify({"status": "success"})
+    
 if __name__ == '__main__':
     app.run(debug=debug_mode)

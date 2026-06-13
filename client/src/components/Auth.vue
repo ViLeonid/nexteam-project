@@ -54,11 +54,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue';
+import api from '@/api';
+import { useRouter } from 'vue-router';
 
-axios.defaults.withCredentials = true;
 
 const router = useRouter()
 const username = ref('')
@@ -68,10 +67,10 @@ const error = ref('')
 
 const handleAuth = async () => {
   error.value = ''
-  const url = isLogin.value ? 'http://localhost:5000/api/login' : 'http://localhost:5000/api/register'
+  const url = isLogin.value ? '/api/login' : '/api/register'
   
   try {
-    const response = await axios.post(url, {
+    const response = await api.post(url, {
       username: username.value,
       password: password.value
     })
@@ -79,7 +78,7 @@ const handleAuth = async () => {
     if (isLogin.value) {
       sessionStorage.setItem('isLoggedIn', 'true')
       sessionStorage.setItem('username', response.data.username)
-      router.push('/') 
+      router.push('/todos') 
     } else {
       alert('Регистрация успешна! Теперь выполните вход.')
       isLogin.value = true

@@ -48,9 +48,9 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { Qalendar } from "qalendar";
-import axios from "axios";
+import api from '@/api';
 
-axios.defaults.withCredentials = true;
+api.defaults.withCredentials = true;
 
 const todos = ref([]);
 const customEvents = ref([]);
@@ -148,15 +148,13 @@ const allCalendarBlocks = computed(() => {
     colorScheme: ev.id === draftEventId ? newEvent.value.color : ev.color,
     isEditable: true // Разрешаем редактирование и растягивание
   }));
-  console.log('events',mappedEvents);
 
   return mappedEvents;
 });
 const handleDeleteEvent = async (event) => {
   const id = event.replace("event-","")
-  console.log(id);
-  await axios.delete(
-    `http://localhost:5000/api/events/${id}`
+  await api.delete(
+    `/api/events/${id}`
   );
 
   await loadData();
@@ -165,8 +163,8 @@ const handleDeleteEvent = async (event) => {
 const loadData = async () => {
   try {
     const [todosRes, eventsRes] = await Promise.all([
-      axios.get('http://localhost:5000/todos'),
-      axios.get('http://localhost:5000/api/events')
+      api.get('/api/todos'),
+      api.get('/api/events')
     ]);
     if (todosRes.data?.todos) todos.value = todosRes.data.todos;
     if (eventsRes.data?.events) customEvents.value = eventsRes.data.events;
@@ -190,7 +188,7 @@ const submitEvent = async () => {
       color: newEvent.value.color
     };
     
-    await axios.post('http://localhost:5000/api/events', payload);
+    await api.post('/api/events', payload);
     newEvent.value = { ...initialEventState };
     await loadData(); // Перезагрузит данные, затерев временный черновик
   } catch (error) {

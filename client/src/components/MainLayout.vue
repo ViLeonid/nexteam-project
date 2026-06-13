@@ -1,6 +1,6 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useRouter } from 'vue-router';
+import api from '@/api';
 
 const router = useRouter()
 
@@ -8,7 +8,7 @@ const router = useRouter()
 const handleLogout = async () => {
   try {
     // Отправляем запрос на разлогин во Flask (порт 5000)
-    await axios.post('http://localhost:5000/api/logout')
+    await api.post('/api/logout')
   } catch (e) {
     console.error('Ошибка при удалении сессии на сервере', e)
   } finally {
@@ -40,7 +40,7 @@ const handleLogout = async () => {
             </h6>
             <ul class="nav flex-column mb-3">
               <li class="nav-item">
-                <router-link to="/" class="nav-link" exact-active-class="active">
+                <router-link to="/todos" class="nav-link" exact-active-class="active">
                   <i class="bi bi-book me-2"></i> Задачи
                 </router-link>
               </li>

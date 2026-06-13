@@ -15,7 +15,7 @@ const router = createRouter({
       component: MainLayout,
       children: [
         {
-          path: '',
+          path: 'todos',
           name: 'Todos',
           component: Todos,
           meta: { requiresAuth: true }

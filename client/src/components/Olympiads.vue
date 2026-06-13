@@ -3,10 +3,16 @@
 
     <div class="controls">
       <input
-        v-model="count"
+        v-model="start_limit"
         type="number"
         class="count-input"
-        placeholder="Количество олимпиад"
+        placeholder="Начало"
+      >
+      <input
+        v-model="end_limit"
+        type="number"
+        class="count-input"
+        placeholder="Конец"
       >
 
       <button
@@ -54,49 +60,34 @@
       <div
         v-for="olympiad in sortedOlympiads"
         :key="olympiad.id"
-        class="olympiad-card"
+        :class="
+          addedOlympiads.includes(String(olympiad.id))
+            ? 'olympiad-card-added'
+            : 'olympiad-card-active'
+        "
       >
-
         <div class="card-top">
-
-          <div class="icon-box">
-            🏆
-          </div>
-
+          <div class="icon-box">🏆</div>
           <div>
             <h2>{{ olympiad.title }}</h2>
-
+            
             <span class="subtitle">
               Олимпиада школьников
             </span>
           </div>
 
         </div>
-
-        <div
-          v-if="olympiad.subjects?.length"
-          class="subjects"
-        >
-          <span
-            v-for="subject in olympiad.subjects"
-            :key="subject"
-            class="subject-tag"
-          >
+        <div v-if="olympiad.subjects?.length" class="subjects">
+          <span v-for="subject in olympiad.subjects" :key="subject" class="subject-tag">
             {{ subject }}
           </span>
         </div>
 
-        <div
-          v-if="olympiad.dates?.length"
-          class="section"
-        >
+        <div v-if="olympiad.dates?.length" class="section">
           <h3>Этапы</h3>
 
           <ul class="stages">
-            <li
-              v-for="date in olympiad.dates"
-              :key="date.stage"
-            >
+            <li v-for="date in olympiad.dates" :key="date.stage">
               {{ date.stage }} — {{ date.date }}
             </li>
           </ul>
@@ -114,12 +105,7 @@
               ID: {{ olympiad.id }}
             </div>
 
-            <a
-              v-if="olympiad.url"
-              :href="olympiad.url"
-              target="_blank"
-              class="site-link"
-            >
+            <a v-if="olympiad.url" :href="olympiad.url" target="_blank" class="site-link">
               🌐 Сайт олимпиады
             </a>
 
@@ -127,18 +113,24 @@
 
           <div class="actions">
 
-            <div
-              v-if="olympiad.level_perechnya"
-              class="level"
-            >
+            <div v-if="olympiad.level_perechnya" class="level">
               ⭐ Уровень {{ olympiad.level_perechnya }}
             </div>
 
             <button
+              v-if="!addedOlympiads.includes(String(olympiad.id))"
               class="schedule-btn"
               @click="AddInSchedule(olympiad.id)"
             >
               Добавить в расписание
+            </button>
+
+            <button
+              v-else
+              class="remove-btn"
+              @click="RemoveFromSchedule(olympiad.id)"
+            >
+              Удалить из расписания
             </button>
 
           </div>
@@ -154,22 +146,58 @@
 
 
 <script setup>
-import axios from "axios";
+import api from '@/api';
 import { ref, computed, onMounted } from "vue";
 
 const olympiads = ref([]);
 const loading = ref(false);
-const count = ref();
+const start_limit = ref();
+const end_limit = ref();
 const sortBy = ref("id");
 const selectedSubject = ref("");
 const selectedClass = ref("");
+const addedOlympiads = ref([]);
 
-const AddInSchedule = (id) => {
-  axios.post(`http://localhost:5000/add_olympiad/${id}`, id);
-}
+const AddInSchedule = async (id) => {
+  try {
+    await api.post(`/add_olympiad/${id}`);
+
+    if (!addedOlympiads.value.includes(String(id))) {
+      addedOlympiads.value.push(String(id));
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const GetAddedOlympiads = async () => {
+  try {
+    const res = await api.get('/added_olympiads');
+
+    addedOlympiads.value =
+      res.data.olympiads.map(id => String(id));
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const RemoveFromSchedule = async (id) => {
+  try {
+    await api.delete(`/remove_olympiad/${id}`);
+
+    addedOlympiads.value =
+      addedOlympiads.value.filter(
+        olympiadId => olympiadId !== String(id)
+      );
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 const GetOlympiads = () => {
-    axios.get('http://localhost:5000/olympiads', { withCredentials: true }).then(res => { olympiads.value = res.data.olympiads })
+    api.get('/olympiads').then(res => { olympiads.value = res.data.olympiads })
 }
 
 const sortedOlympiads = computed(() => {
@@ -228,13 +256,11 @@ const sortedOlympiads = computed(() => {
 const loadOlympiads = async () => {
   loading.value = true;
   try {
-    const response = await axios.post(
-      "http://localhost:5000/api/olympiads/parse",
+    const response = await api.post(
+      "/api/olympiads/parse",
       {
-        count: count.value
-      },
-      {
-        withCredentials: true
+        start: start_limit.value,
+        end: end_limit.value
       }
     );
     olympiads.value = response.data.olympiads || [];
@@ -244,7 +270,10 @@ const loadOlympiads = async () => {
     loading.value = false;
   }
 };
-onMounted(GetOlympiads);
+onMounted(() => {
+  GetOlympiads();
+  GetAddedOlympiads();
+});
 </script>
 <style scoped>
 
@@ -348,6 +377,29 @@ onMounted(GetOlympiads);
   transform: translateY(-2px);
 }
 
+.remove-btn {
+  border: none;
+
+  background: #4d1f1f;
+  color: #ff6b6b;
+
+  padding: 12px 18px;
+
+  border-radius: 14px;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.remove-btn:hover {
+  background: #6a2a2a;
+  transform: translateY(-2px);
+}
+
 /* ---------- Сетка ---------- */
 
 .olympiads-grid {
@@ -362,9 +414,9 @@ onMounted(GetOlympiads);
   gap: 20px;
 }
 
-/* ---------- Карточка ---------- */
 
-.olympiad-card {
+
+.olympiad-card-active {
   background: #0f1b34;
 
   border: 1px solid #243456;
@@ -374,7 +426,24 @@ onMounted(GetOlympiads);
   padding: 20px;
 
   color: white;
+  opacity: 1;
+  transition: .25s;
 
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35);
+}
+
+.olympiad-card-added {
+  background: #0f1b34;
+
+  border: 1px solid #243456;
+
+  border-radius: 22px;
+
+  padding: 20px;
+
+  color: white;
+  opacity: 0.4;
   transition: .25s;
 
   box-shadow:
@@ -389,8 +458,6 @@ onMounted(GetOlympiads);
   box-shadow:
     0 20px 40px rgba(0,0,0,.45);
 }
-
-/* ---------- Верх карточки ---------- */
 
 .card-top {
   display: flex;

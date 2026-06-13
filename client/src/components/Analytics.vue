@@ -23,6 +23,7 @@
 import { ref, onMounted } from 'vue'
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import api from '@/api';
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -62,23 +63,22 @@ const chartOptions = {
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:5000/api/analytics/today', {
-      credentials: 'include'
-    })
-    const result = await response.json()
+    const response = await api.get('/api/analytics/today')
+
+    const result = response.data
 
     chartData.value = {
       labels: result.labels,
       datasets: [
         {
           data: result.values,
-          backgroundColor: result.colors, // Пастельные цвета вернутся из вашего Flask
-          borderWidth: 4, // Красивый белый разделитель секторов
+          backgroundColor: result.colors,
+          borderWidth: 4,
           borderColor: '#ffffff'
         }
       ]
     }
-    
+
     loaded.value = true
   } catch (error) {
     console.error("Ошибка загрузки аналитики:", error)

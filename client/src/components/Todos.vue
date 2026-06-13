@@ -142,9 +142,9 @@
 <script setup>
 
 
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
-import katex from 'katex'
+import { ref, onMounted, computed } from 'vue';
+import api from '@/api';
+import katex from 'katex';
 
 function renderMixedContent(str) {
   if (!str) return ''
@@ -205,7 +205,7 @@ const AIaddForm = ref({subject: '', topic: '', deadline: ''})
 const editForm = ref({ id: '', title: '', description: '', deadline: '', is_done: false })
 
 const getTodos = () => {
-  axios.get('http://localhost:5000/todos').then(res => { todos.value = res.data.todos })
+  api.get('/api/todos').then(res => { todos.value = res.data.todos })
 }
 
 // Вычисляемое свойство для фильтрации списка
@@ -222,7 +222,7 @@ const AIaddTodo = async () => {
   if (!AIaddForm.value.subject || isAILoading.value) return;
   isAILoading.value = true;
   try {
-    await axios.post('http://localhost:5000/todos', AIaddForm.value);
+    await api.post('/api/todos', AIaddForm.value);
     getTodos();
     AIaddForm.value = { subject: '', topic: '', deadline: '' };
   } catch (e) {
@@ -234,7 +234,7 @@ const AIaddTodo = async () => {
 
 const addTodo = () => {
   if (!addForm.value.title) return;
-  axios.post('http://localhost:5000/todos', addForm.value).then(() => {
+  api.post('/api/todos', addForm.value).then(() => {
     getTodos();
     addForm.value = { title: '', description: '', deadline: '' };
   });
@@ -242,11 +242,11 @@ const addTodo = () => {
 
 const toggleDone = (todo) => {
   todo.is_done = !todo.is_done;
-  axios.put(`http://localhost:5000/todos/${todo.id}`, todo).then(() => getTodos());
+  api.put(`/api/todos/${todo.id}`, todo).then(() => getTodos());
 }
 
 const deleteTodo = (id) => {
-  axios.delete(`http://localhost:5000/todos/${id}`).then(() => getTodos());
+  api.delete(`/api/todos/${id}`).then(() => getTodos());
 }
 
 const openEditModal = (todo) => {
@@ -255,7 +255,7 @@ const openEditModal = (todo) => {
 }
 
 const handleEditSubmit = () => {
-  axios.put(`http://localhost:5000/todos/${editForm.value.id}`, editForm.value).then(() => {
+  api.put(`/api/todos/${editForm.value.id}`, editForm.value).then(() => {
     getTodos();
     showEditModal.value = false;
   });

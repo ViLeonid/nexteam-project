@@ -10,6 +10,7 @@ from routes.todos import todos_bp
 from routes.events import events_bp
 from routes.analytics import analytics_bp
 from routes.olympiads import olympiads_bp
+from parsing_olympiads import parse_olympiads
 from extensions import db
 
 load_dotenv()
@@ -31,28 +32,8 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 db.init_app(app)
 
-
 with app.app_context():
     db.create_all()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
 if __name__ == '__main__':
     app.run(debug=debug_mode)

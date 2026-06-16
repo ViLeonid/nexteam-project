@@ -1,8 +1,8 @@
 import requests, re
 from bs4 import BeautifulSoup
-
 from models import Olympiads
 from extensions import db
+
 
 def parse_olympiads(start_limit, end_limit):
     output_olympiads = []
@@ -103,31 +103,11 @@ def parse_olympiads(start_limit, end_limit):
                     level_perechnya = level_perechnya
                 )
                 db.session.add(olympiad)
-                db.session.commit()    
-                this_olympiad = Olympiads.query.filter_by(id=activity_id).first()
-                output_olympiads.append({
-                    "id": this_olympiad.id,
-                    "title": this_olympiad.title,
-                    "subjects": this_olympiad.subjects,
-                    "dates": this_olympiad.dates,
-                    "classes": this_olympiad.classes,
-                    "url": this_olympiad.url,
-                    "level_perechnya": this_olympiad.level_perechnya
-                })
+                  
                 print(f'{ activity_id } parsed')
 
             except Exception as e:
                 print(activity_id, e)
         else:
             print(f'{ activity_id } was not parsed')
-            this_olympiad = Olympiads.query.filter_by(id=activity_id).first()
-            output_olympiads.append({
-                    "id": this_olympiad.id,
-                    "title": this_olympiad.title,
-                    "subjects": this_olympiad.subjects,
-                    "dates": this_olympiad.dates,
-                    "classes": this_olympiad.classes,
-                    "url": this_olympiad.url,
-                    "level_perechnya": this_olympiad.level_perechnya
-                })
-    return output_olympiads
+        db.session.commit()  

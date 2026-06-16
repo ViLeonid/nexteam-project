@@ -1,52 +1,30 @@
 <template>
-  <div class="calendar-layout-fixed">
-    <!-- Форма для быстрого добавления произвольного блока/события -->
-    <div class="custom-event-form">
-      <h3>Добавить событие</h3>
-      
-      <input v-model="newEvent.title" type="text" placeholder="Название" class="custom-input" />
-      <textarea v-model="newEvent.description" placeholder="Описание" class="custom-textarea"></textarea>
-      
-      <div class="time-inputs-grid">
-        <label>Старт: <input v-model="newEvent.start_time" type="datetime-local" class="custom-input-date" /></label>
-        <label>Конец: <input v-model="newEvent.end_time" type="datetime-local" class="custom-input-date" /></label>
-      </div>
 
-      <label class="color-label">Цвет блока:
-        <select v-model="newEvent.color" class="custom-select">
-          <option value="blue">Синий</option>
-          <option value="yellow">Желтый</option>
-          <option value="purple">Фиолетовый</option>
-          <option value="orange">Оранжевый</option>=
-          <option value="red">Красный</option>
-          <option value="green">Зелёный</option>
-        </select>
-      </label>
-      <div style="display:flex">
-        <button @click="submitEvent" class="submit-button">Добавить</button>
-        <button @click="cancelEvent" class="cancel-button">Отмена</button>
-      </div>
+<div class="calendar-layout-fixed">
+    <div class="qalendar-holder">
+
+        <addEventForm 
+            v-model:newEvent="newEvent"
+            v-show="isFormActive"
+            class="calendar-form-overlay"
+         />
+
+        <Qalendar
+            :events="allCalendarBlocks"
+            :config="config"
+            @datetime-was-clicked="handleCalendarClick"
+            @event-was-resized="syncUpdatedEvent"
+            @event-was-dragged="syncUpdatedEvent"
+            @delete-event="handleDeleteEvent"
+        />
     </div>
-
-    <!-- Компонент календаря с обработчиком клика по времени -->
-    <!-- Компонент календаря с обработчиками -->
-    <div class="calendar-container-fixed">
-      <Qalendar 
-        :events="allCalendarBlocks" 
-        :config="config" 
-        @datetime-was-clicked="handleCalendarClick"
-        @event-was-resized="syncUpdatedEvent"
-        @event-was-dragged="syncUpdatedEvent"
-        @delete-event="handleDeleteEvent"
-      />
-    </div>
-
-  </div>
+</div>
 </template>
 
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import addEventForm from "./addEventForm.vue";
+import { ref, onMounted, computed, nextTick, provide } from "vue";
 import { Qalendar } from "qalendar";
 import api from '@/api';
 
@@ -54,10 +32,11 @@ api.defaults.withCredentials = true;
 
 const todos = ref([]);
 const customEvents = ref([]);
+const isFormActive = ref(false);
 
 // Чистый объект для сброса формы
 const initialEventState = {
-  title: "",
+  title: "Новое событие",
   description: "",
   start_time: "",
   end_time: "",
@@ -74,12 +53,12 @@ const config = ref({
   isInteractive: true, // Включает возможность перетаскивания и растягивания блоков
   style: {
     colorSchemes: {
-      blue: { color: '#ffffff', backgroundColor: 'rgba(59, 130, 246, 0.15)', border: '4px solid #3b82f6' },
-      yellow: { color: '#ffffff', backgroundColor: 'rgba(234, 179, 8, 0.15)', border: '4px solid #eab308' },
-      purple: { color: '#ffffff', backgroundColor: 'rgba(168, 85, 247, 0.15)', border: '4px solid #a855f7' },
-      orange: { color: '#ffffff', backgroundColor: 'rgba(249, 115, 22, 0.15)', border: '4px solid #f97316' },
-      red: { color: '#ffffff', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '4px solid #ef4444' },
-      green: { color: '#ffffff', backgroundColor: 'rgba(34, 197, 94, 0.15)', border: '4px solid #22c55e' }
+      blue: { color: '#ffffff', backgroundColor: 'rgba(59, 130, 246, 0.5)', border: '4px solid #3b82f6' },
+      yellow: { color: '#ffffff', backgroundColor: 'rgba(234, 179, 8, 0.5)', border: '4px solid #eab308' },
+      purple: { color: '#ffffff', backgroundColor: 'rgba(168, 85, 247, 0.5)', border: '4px solid #a855f7' },
+      orange: { color: '#ffffff', backgroundColor: 'rgba(249, 115, 22, 0.5)', border: '4px solid #f97316' },
+      red: { color: '#ffffff', backgroundColor: 'rgba(239, 68, 68, 0.5)', border: '4px solid #ef4444' },
+      green: { color: '#ffffff', backgroundColor: 'rgba(34, 197, 94, 0.5)', border: '4px solid #22c55e' }
     }
   }
 });
@@ -94,15 +73,66 @@ const formatToInputDateTime = (date) => {
   return new Date(date - tzOffset).toISOString().slice(0, 16);
 };
 
+
+// Переменные для контроля положения скролла
+const savedScrollPosition = ref(0);
+
+// Ищет контейнер скролла внутри Qalendar
+const getScrollElement = () => {
+  return document.querySelector('.calendar-week__wrapper')
+      || document.querySelector('.calendar-body__time-grid')
+      || document.querySelector('[class*="__wrapper"].ps');
+};
+
+// ФУНКЦИЯ 1: Запоминает, где сейчас находится скролл (вызывается ДО обновления данных)
+const saveCurrentScroll = () => {
+  const scrollElement = getScrollElement();
+  if (scrollElement) {
+    savedScrollPosition.value = scrollElement.scrollTop;
+  }
+};
+
+// ФУНКЦИЯ 2: Возвращает скролл на сохраненное место БЕЗ дёргания
+const restoreSavedScroll = async () => {
+  await nextTick();
+  
+  // requestAnimationFrame срабатывает ДО того, как браузер отрисует кадр на экране.
+  // Это убирает эффект визуального прыжка скролла.
+  requestAnimationFrame(() => {
+    const scrollElement = getScrollElement();
+    if (scrollElement && savedScrollPosition.value > 0) {
+      
+      // Мгновенно выставляем сохраненную позицию
+      scrollElement.scrollTop = savedScrollPosition.value;
+      
+      // Дополнительно дублируем через scrollTo, чтобы плагин Perfect Scrollbar подхватил позицию
+      scrollElement.scrollTo({
+        top: savedScrollPosition.value,
+        behavior: 'instant' // Используем мгновенный скролл вместо 'auto' или 'smooth'
+      });
+      
+    }
+  });
+};
+
+// Функция обновления текста о прокрутке при обычном скролле мышкой
+
+
 // Клик по пустой ячейке: создаем черновик прямо в массиве событий
 const handleCalendarClick = (timeString) => {
+  // Запоминаем скролл перед изменением реактивного массива
+  saveCurrentScroll();
+  isFormActive.value = true;
+  console.log(isFormActive.value);
+  
   const isoString = timeString.replace(" ", "T");
-  const startDate = new Date(isoString);
-  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 час по умолчанию
+  const firstDate = new Date(isoString);
+  const startDate = new Date(firstDate.setMinutes(Math.round(firstDate.getMinutes()/15)*15));
+  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); 
 
   // Заполняем форму слева
   newEvent.value.title = newEvent.value.title || "Новое событие";
-  newEvent.value.start_time = isoString;
+  newEvent.value.start_time = formatToInputDateTime(startDate);
   newEvent.value.end_time = formatToInputDateTime(endDate);
 
   // Удаляем старый черновик, если он был, чтобы не плодить копии
@@ -117,10 +147,15 @@ const handleCalendarClick = (timeString) => {
     end_time: newEvent.value.end_time,
     color: newEvent.value.color
   });
+  // Восстанавливаем скролл, чтобы сетка времени не прыгала вверх
+  restoreSavedScroll();
 };
 
-// Функция синхронизации: когда подергали блок на календаре, обновляем форму и массив
-const syncUpdatedEvent = (updatedEvent) => {
+// Функция синхронизации: когда подергали или растянули блок на календаре
+const syncUpdatedEvent = async (updatedEvent) => {
+  // 1. Мгновенно запоминаем скролл, прежде чем Vue начнет мутировать массив
+  saveCurrentScroll();
+
   const startISO = updatedEvent.time.start.replace(" ", "T");
   const endISO = updatedEvent.time.end.replace(" ", "T");
 
@@ -136,7 +171,11 @@ const syncUpdatedEvent = (updatedEvent) => {
     target.start_time = startISO;
     target.end_time = endISO;
   }
+
+  // 2. Возвращаем скролл на место в следующем кадре анимации
+  await restoreSavedScroll();
 };
+
 
 // Сюда транслируется массив для отображения
 const allCalendarBlocks = computed(() => {
@@ -151,83 +190,144 @@ const allCalendarBlocks = computed(() => {
 
   return mappedEvents;
 });
-const handleDeleteEvent = async (event) => {
-  const id = event.replace("event-","")
-  await api.delete(
-    `/api/events/${id}`
-  );
 
-  await loadData();
+// Удаление события
+// Удаление события
+const handleDeleteEvent = async (event) => {
+  // Запоминаем скролл перед удалением
+
+  saveCurrentScroll();
+  // Очищаем ID от префикса библиотеки Qalendar
+  
+  const id = event.replace("event-", "");
+  
+  if (id === draftEventId.replace("event-", "")) {
+    
+    customEvents.value = customEvents.value.filter(ev => ev.id !== draftEventId);
+    newEvent.value = { ...initialEventState };
+    await restoreSavedScroll();
+    return; 
+  }
+
+  try {
+    await api.delete(`/api/events/${id}`);
+    await loadData();
+  } catch (error) {
+    console.error("Ошибка при удалении события с сервера:", error);
+  }
 };
 
+
+
+// Загрузка данных с бэкенда
 const loadData = async () => {
   try {
+    // Перед запросом запоминаем, где стоял скролл у пользователя
+    saveCurrentScroll();
+
     const [todosRes, eventsRes] = await Promise.all([
       api.get('/api/todos'),
       api.get('/api/events')
     ]);
     if (todosRes.data?.todos) todos.value = todosRes.data.todos;
     if (eventsRes.data?.events) customEvents.value = eventsRes.data.events;
+
+    // После обновления данных возвращаем скролл на то же самое место
+    await restoreSavedScroll();
   } catch (error) {
     console.error("Ошибка при обновлении данных:", error);
   }
 };
-
-const submitEvent = async () => {
-  if (!newEvent.value.title || !newEvent.value.start_time || !newEvent.value.end_time) {
-    alert("Заполните название и время начала/окончания!");
-    return;
-  }
-  try {
-    // Отправляем чистый объект без временного id
-    const payload = {
-      title: newEvent.value.title,
-      description: newEvent.value.description,
-      start_time: newEvent.value.start_time,
-      end_time: newEvent.value.end_time,
-      color: newEvent.value.color
-    };
-    
-    await api.post('/api/events', payload);
-    newEvent.value = { ...initialEventState };
-    await loadData(); // Перезагрузит данные, затерев временный черновик
-  } catch (error) {
-    console.error("Ошибка сохранения события:", error);
-  }
-};
-
-onMounted(loadData);
+provide('loadData', loadData);
+provide('restoreSavedScroll', restoreSavedScroll);
+provide('saveCurrentScroll', saveCurrentScroll);
+provide('newEvent', newEvent);
+provide('draftEventId', draftEventId);
+provide('customEvents', customEvents);
+provide('isFormActive', isFormActive)
+onMounted(async () => {
+  // Первичная загрузка данных
+  await loadData();
+});
 </script>
-
 
 <style>
 @import "qalendar/dist/style.css";
 
-/* Базовая раскладка на чистом CSS */
+/* Главный контейнер на весь экран */
 .calendar-layout-fixed {
   display: flex;
   gap: 24px;
   padding: 24px;
   background-color: #0f172a; /* Глубокий темный фон всего экрана */
-  min-height: 95vh;
+  height: 100vh;             /* Строго высота экрана */
+  max-height: 100vh;
   box-sizing: border-box;
+  overflow: hidden;          /* Запрещаем скролл самого экрана */
 }
 
-/* Красивая темная левая панель */
-.custom-event-form {
-  width: 320px;
-  min-width: 320px;
-  padding: 24px;
-  border: 1px solid #334155;
-  border-radius: 16px;
+/* Обертка для левой панели */
+.sidebar-wrapper {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background-color: #1e293b; /* Цвет панели */
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  height: fit-content;
+  width: 320px;
+  min-width: 320px;
+  z-index: 10;
 }
+
+/* Кнопки управления скроллом */
+.controls {
+  display: flex;
+  gap: 12px;
+}
+.scroll-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.scroll-btn:hover {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Правая часть: Календарь забирает ВСЁ оставшееся место */
+.calendar-layout-fixed {
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.qalendar-holder {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+}
+
+.calendar-form-overlay {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+
+    width: 320px;
+    z-index: 9999;
+
+    background: #1e293b;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+/* Красивая темная левая форма (оставляем ваши стили, убирая лишнее) */
+
+
 .custom-event-form h3 {
   margin: 0 0 4px 0;
   color: #ffffff;
@@ -275,7 +375,6 @@ onMounted(loadData);
   gap: 6px;
 }
 
-/* Красивая кнопка */
 .submit-button {
   width: 100%;
   padding: 12px;
@@ -283,52 +382,24 @@ onMounted(loadData);
   color: white;
   border: none;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  font-weight: 600;
 }
 
-.submit-button:hover {
-  background-color: #1d4ed8;
-}
-
-.submit-button:active {
-  transform: scale(0.98);
-}
-
-.cancel-button{
-  width: 100%;
-  padding: 12px;
-  background-color: #585858;
-  color: white;
-  border: none;
+.scroll-info {
+  margin-top: 8px;
+  padding: 10px;
+  background-color: #1e293b;
+  border: 1px dashed #475569;
   border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 6px -1px rgba(85, 85, 85, 0.2);
+  color: #94a3b8;
+  font-size: 13px;
+  text-align: center;
 }
 
-/* Контейнер календаря */
-.calendar-container-fixed {
-  flex-grow: 1;
-  height: 85vh;
+.scroll-info span {
+  color: #3b82f6; /* Подсветим пиксели синим цветом */
+  font-weight: bold;
 }
 
-/* Стили самого календаря Qalendar */
-.calendar-container-fixed .calendar-root {
-  --qalendar-bg-color: #0f172a !important;
-  --qalendar-border-color: #334155 !important;
-  --qalendar-text-color: #f1f5f9 !important;
-  --qalendar-grid-line-color: #1e293b !important;
-}
-
-.calendar-root {
-  border-radius: 16px !important;
-  border: 1px solid #334155 !important;
-  overflow: hidden;
-}
 </style>

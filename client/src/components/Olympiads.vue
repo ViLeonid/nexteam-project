@@ -3,25 +3,11 @@
 
     <div class="controls">
       <input
-        v-model="start_limit"
-        type="number"
+        v-model="searchQuery"
+        type="text"
         class="count-input"
-        placeholder="Начало"
+        placeholder="Поиск по названию..."
       >
-      <input
-        v-model="end_limit"
-        type="number"
-        class="count-input"
-        placeholder="Конец"
-      >
-
-      <button
-        @click="loadOlympiads"
-        :disabled="loading"
-        class="search-btn"
-      >
-        {{ loading ? "Парсим..." : "Найти олимпиады" }}
-      </button>
 
       <select v-model="selectedSubject">
         <option value="">Все предметы</option>
@@ -116,23 +102,23 @@
             <div v-if="olympiad.level_perechnya" class="level">
               ⭐ Уровень {{ olympiad.level_perechnya }}
             </div>
-
-            <button
+            <div v-if="olympiad.dates.length">
+              <button
               v-if="!addedOlympiads.includes(String(olympiad.id))"
-              class="schedule-btn"
-              @click="AddInSchedule(olympiad.id)"
-            >
-              Добавить в расписание
-            </button>
+                class="schedule-btn"
+                @click="AddInSchedule(olympiad.id)"
+              >
+                Добавить в расписание
+              </button>
 
-            <button
-              v-else
-              class="remove-btn"
-              @click="RemoveFromSchedule(olympiad.id)"
-            >
-              Удалить из расписания
-            </button>
-
+              <button
+                v-else
+                class="remove-btn"
+                @click="RemoveFromSchedule(olympiad.id)"
+              >
+                Удалить из расписания
+              </button>
+            </div>
           </div>
 
         </div>
@@ -157,6 +143,9 @@ const sortBy = ref("id");
 const selectedSubject = ref("");
 const selectedClass = ref("");
 const addedOlympiads = ref([]);
+const searchQuery = ref("");
+
+
 
 const AddInSchedule = async (id) => {
   try {
@@ -202,6 +191,28 @@ const GetOlympiads = () => {
 
 const sortedOlympiads = computed(() => {
   let arr = [...olympiads.value];
+
+
+  if (searchQuery.value.trim()) {
+    const words = searchQuery.value
+      .toLowerCase()
+      .split(/\s+/);
+
+    arr = arr.filter(olympiad =>
+      words.every(word =>
+        olympiad.title.toLowerCase().includes(word)
+      )
+    );
+  }
+
+  if (selectedSubject.value) {
+    arr = arr.filter(olympiad =>
+      olympiad.subjects?.includes(selectedSubject.value)
+    );
+  }
+
+
+
   if (selectedSubject.value) {
     arr = arr.filter(olympiads =>
       olympiads.subjects?.includes(selectedSubject.value)
@@ -253,23 +264,6 @@ const sortedOlympiads = computed(() => {
   }
 });
 
-const loadOlympiads = async () => {
-  loading.value = true;
-  try {
-    const response = await api.post(
-      "/api/olympiads/parse",
-      {
-        start: start_limit.value,
-        end: end_limit.value
-      }
-    );
-    olympiads.value = response.data.olympiads || [];
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-};
 onMounted(() => {
   GetOlympiads();
   GetAddedOlympiads();

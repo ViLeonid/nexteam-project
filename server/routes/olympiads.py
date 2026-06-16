@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request, session
 
 
-from parsing_olympiads import parse_olympiads
 from models import Olympiads, Event
 from extensions import db
 from utils import map_date
@@ -30,14 +29,6 @@ def olympiads():
                 })
     return jsonify({'status': 'success', 'olympiads': output})
 
-@olympiads_bp.route('/api/olympiads/parse', methods=['POST'])
-def olympiad_parser():
-    current_user_id = session.get('user_id')
-    if not current_user_id:
-        return jsonify({"error": "Неавторизованный доступ"}), 401
-    data = request.get_json()
-    olympiads = parse_olympiads(int(data.get('start')),int(data.get('end')))
-    return jsonify({"status": "success","olympiads": olympiads})
 
 @olympiads_bp.route('/add_olympiad/<olympiad_id>', methods=['POST'])
 def add_olympiad(olympiad_id):
@@ -58,6 +49,7 @@ def add_olympiad(olympiad_id):
         )
         db.session.add(new_event)
     db.session.commit()
+    print(olympiad.dates)
     return jsonify({"status": "success"})
 
 @olympiads_bp.route('/remove_olympiad/<olympiad_id>', methods=['DELETE'])

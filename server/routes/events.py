@@ -58,3 +58,4 @@ def single_event(event_id):
             db.session.delete(todo)
         db.session.commit()
         return jsonify({'status': 'success'})
+

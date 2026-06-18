@@ -2,12 +2,17 @@
 
 <div class="calendar-layout-fixed">
     <div class="qalendar-holder">
-
-        <addEventForm 
-            v-model:newEvent="newEvent"
-            v-show="isFormActive"
-            class="calendar-form-overlay"
-         />
+        <Teleport v-if="teleportTarget" :to="teleportTarget">
+          <addEventForm
+              v-model:newEvent="newEvent"
+              v-if="isFormActive"
+              class="calendar-form-overlay"
+              :style="{
+                  top: formPosition.top + 'px',
+                  left: formPosition.left + 'px'
+              }"
+          />
+        </Teleport>
 
         <Qalendar
             :events="allCalendarBlocks"
@@ -43,8 +48,11 @@ const initialEventState = {
   color: "blue"
 };
 
+const savedScrollPosition = ref(0);
 const newEvent = ref({ ...initialEventState });
 const draftEventId = "draft-event-id"; // Фиксированный ID для черновика
+const teleportTarget = ref(null);
+const formPosition = ref({top: 0, left: 0});
 
 const config = ref({
   locale: "ru-RU",
@@ -73,9 +81,6 @@ const formatToInputDateTime = (date) => {
   return new Date(date - tzOffset).toISOString().slice(0, 16);
 };
 
-
-// Переменные для контроля положения скролла
-const savedScrollPosition = ref(0);
 
 // Ищет контейнер скролла внутри Qalendar
 const getScrollElement = () => {
@@ -115,15 +120,25 @@ const restoreSavedScroll = async () => {
   });
 };
 
-// Функция обновления текста о прокрутке при обычном скролле мышкой
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Клик по пустой ячейке: создаем черновик прямо в массиве событий
-const handleCalendarClick = (timeString) => {
+const handleCalendarClick = async (timeString) => {
   // Запоминаем скролл перед изменением реактивного массива
   saveCurrentScroll();
-  isFormActive.value = true;
-  console.log(isFormActive.value);
   
   const isoString = timeString.replace(" ", "T");
   const firstDate = new Date(isoString);
@@ -147,10 +162,52 @@ const handleCalendarClick = (timeString) => {
     end_time: newEvent.value.end_time,
     color: newEvent.value.color
   });
+
+  await nextTick();
+
+  setForm();
+
   // Восстанавливаем скролл, чтобы сетка времени не прыгала вверх
   restoreSavedScroll();
 };
 
+const setForm = () => {
+  if (customEvents.value.find(ev => ev.id === draftEventId)){
+    isFormActive.value=true;
+    const wrapper = document.querySelector(".qalendar-holder");
+    const timeline = document.querySelector(".week-timeline");
+    const event = document.querySelector(`[data-ref="event-${draftEventId}"]`);
+
+    teleportTarget.value = wrapper;
+    const timelineRect = timeline.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const eventRect = event.getBoundingClientRect();
+    const FormWidth = 330;
+    const FormHeight = 540;
+    const widthOffset = 10;
+    const heightOffset = 150;
+    let formPositionTop = eventRect.top - wrapperRect.top - heightOffset - savedScrollPosition.value;
+    let formPositionLeft = eventRect.right - wrapperRect.left + widthOffset;
+
+    if(wrapperRect.width < eventRect.right - wrapperRect.left + widthOffset + FormWidth){
+      formPositionLeft = eventRect.left - wrapperRect.left - FormWidth - widthOffset;
+    }
+    if (formPositionTop < timelineRect.bottom + widthOffset){
+      formPositionTop = timelineRect.bottom + widthOffset;
+    }
+    if (formPositionTop + FormHeight > wrapperRect.bottom - widthOffset){
+      formPositionTop = wrapperRect.bottom - FormHeight - widthOffset;
+    }
+    console.log(formPositionTop, wrapperRect.top, timelineRect.bottom)
+
+
+    formPosition.value = {
+        top: formPositionTop,
+        left: formPositionLeft
+    };
+  }
+  
+}
 // Функция синхронизации: когда подергали или растянули блок на календаре
 const syncUpdatedEvent = async (updatedEvent) => {
   // 1. Мгновенно запоминаем скролл, прежде чем Vue начнет мутировать массив
@@ -163,6 +220,7 @@ const syncUpdatedEvent = async (updatedEvent) => {
   if (updatedEvent.id === draftEventId) {
     newEvent.value.start_time = startISO;
     newEvent.value.end_time = endISO;
+    setForm();
   }
 
   // Обновляем объект внутри массива customEvents
@@ -171,25 +229,24 @@ const syncUpdatedEvent = async (updatedEvent) => {
     target.start_time = startISO;
     target.end_time = endISO;
   }
+  await restoreSavedScroll();
+  if (target.id !== draftEventId) {
+        try {
+            api.put(`/api/events/${target.id}`, {
+                title: target.title,
+                description: target.description,
+                start_time: target.start_time,
+                end_time: target.end_time,
+                color: target.color
+            });
+        } catch (e) {
+            console.error("Ошибка сохранения:", e);
+        }
+    }
 
   // 2. Возвращаем скролл на место в следующем кадре анимации
-  await restoreSavedScroll();
+  
 };
-
-
-// Сюда транслируется массив для отображения
-const allCalendarBlocks = computed(() => {
-  const mappedEvents = customEvents.value.map(ev => ({
-    id: ev.id === draftEventId ? draftEventId : `event-${ev.id}`,
-    title: ev.id === draftEventId ? newEvent.value.title : ev.title, // Синхроним ввод текста на лету
-    description: ev.id === draftEventId ? newEvent.value.description : ev.description,
-    time: { start: formatTime(ev.start_time), end: formatTime(ev.end_time) },
-    colorScheme: ev.id === draftEventId ? newEvent.value.color : ev.color,
-    isEditable: true // Разрешаем редактирование и растягивание
-  }));
-
-  return mappedEvents;
-});
 
 // Удаление события
 // Удаление события
@@ -218,26 +275,56 @@ const handleDeleteEvent = async (event) => {
 };
 
 
-
-// Загрузка данных с бэкенда
 const loadData = async () => {
   try {
-    // Перед запросом запоминаем, где стоял скролл у пользователя
     saveCurrentScroll();
 
     const [todosRes, eventsRes] = await Promise.all([
-      api.get('/api/todos'),
-      api.get('/api/events')
+      api.get("/api/todos"),
+      api.get("/api/events")
     ]);
-    if (todosRes.data?.todos) todos.value = todosRes.data.todos;
-    if (eventsRes.data?.events) customEvents.value = eventsRes.data.events;
 
-    // После обновления данных возвращаем скролл на то же самое место
-    await restoreSavedScroll();
+    if (todosRes.data?.todos) {
+      todos.value = todosRes.data.todos;
+    }
+
+    if (eventsRes.data?.events) {
+      customEvents.value = eventsRes.data.events;
+    }
+
+    await nextTick();
+    restoreSavedScroll();
+
   } catch (error) {
     console.error("Ошибка при обновлении данных:", error);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+// Сюда транслируется массив для отображения
+const allCalendarBlocks = computed(() => {
+  const mappedEvents = customEvents.value.map(ev => ({
+    id: ev.id === draftEventId ? draftEventId : `event-${ev.id}`,
+    title: ev.id === draftEventId ? newEvent.value.title : ev.title, // Синхроним ввод текста на лету
+    description: ev.id === draftEventId ? newEvent.value.description : ev.description,
+    time: { start: formatTime(ev.start_time), end: formatTime(ev.end_time) },
+    colorScheme: ev.id === draftEventId ? newEvent.value.color : ev.color,
+    isEditable: true // Разрешаем редактирование и растягивание
+  }));
+
+  return mappedEvents;
+});
+
 provide('loadData', loadData);
 provide('restoreSavedScroll', restoreSavedScroll);
 provide('saveCurrentScroll', saveCurrentScroll);
@@ -313,18 +400,7 @@ onMounted(async () => {
     position: relative;
 }
 
-.calendar-form-overlay {
-    position: absolute;
-    top: 80px;
-    right: 20px;
 
-    width: 320px;
-    z-index: 9999;
-
-    background: #1e293b;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
 /* Красивая темная левая форма (оставляем ваши стили, убирая лишнее) */
 
 
@@ -401,5 +477,10 @@ onMounted(async () => {
   color: #3b82f6; /* Подсветим пиксели синим цветом */
   font-weight: bold;
 }
+
+.calendar-week__wrapper {
+    position: relative;
+}
+
 
 </style>

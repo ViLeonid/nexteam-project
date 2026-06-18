@@ -1,5 +1,5 @@
 <template>
-    <div class="custom-event-form">
+    <div class="custom-event-form" ref="formRef">
       <h3>Добавить событие</h3>
       
       <!-- Убрали props. везде -->
@@ -30,7 +30,7 @@
 
 
 <script setup>
-import { ref, inject } from "vue";
+import { ref, inject, nextTick } from "vue";
 import api from '@/api';
 
 // Инжектируем всё необходимое из родителя (Schedule.vue)
@@ -52,7 +52,11 @@ const initialEventState = {
   end_time: "",
   color: "blue"
 };
-
+const getScrollElement = () => {
+  return document.querySelector('.calendar-week__wrapper')
+      || document.querySelector('.calendar-body__time-grid')
+      || document.querySelector('[class*="__wrapper"].ps');
+};
 const submitEvent = async () => {
   if (
     !newEvent.value.title ||
@@ -64,8 +68,6 @@ const submitEvent = async () => {
   }
 
   try {
-    saveCurrentScroll(); // Фиксируем скролл перед отправкой
-
     const payload = {
       title: newEvent.value.title,
       description: newEvent.value.description,
@@ -74,18 +76,45 @@ const submitEvent = async () => {
       color: newEvent.value.color
     };
 
-    await api.post("/api/events", payload);
+    const { data } = await api.post("/api/events", payload);
 
-    // Очищаем форму через .value
+    // удаляем черновик
+    customEvents.value = customEvents.value.filter(
+      ev => ev.id !== draftEventId
+    );
+
+    // сразу добавляем настоящее событие
+    saveCurrentScroll();
+
+    customEvents.value.push({
+        id: data.id,
+        title: payload.title,
+        description: payload.description,
+        start_time: payload.start_time,
+        end_time: payload.end_time,
+        color: payload.color
+    });
+
+    await nextTick();
+
+    restoreSavedScroll();
+    console.log(getScrollElement().scrollTop);
+      await nextTick();
+      console.log(getScrollElement().scrollTop);
+      setTimeout(() => {
+          console.log(getScrollElement().scrollTop);
+      }, 0);
+      setTimeout(() => {
+          console.log(getScrollElement().scrollTop);
+      }, 100);
+
+    // очищаем форму
     newEvent.value = { ...initialEventState };
-    
-    // Удаляем черновик, так как событие теперь успешно сохранено в базу
-    customEvents.value = customEvents.value.filter(ev => ev.id !== draftEventId);
 
-    await loadData();
-  } catch (error) {
+    isFormActive.value = false;
+  }
+  catch (error) {
     console.error(error);
-    await restoreSavedScroll();
   }
 };
 
@@ -121,8 +150,9 @@ const cancelEvent = () => {
 
 /* Красивая темная левая панель */
 .custom-event-form {
-  width: 320px;
-  min-width: 320px;
+  width: 330px;
+  height: 540px;
+  position: absolute;
   padding: 24px;
   border: 1px solid #334155;
   border-radius: 16px;
@@ -132,7 +162,7 @@ const cancelEvent = () => {
   background-color: #1e293b; /* Цвет панели */
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
-  height: fit-content;
+  z-index: 1;
 }
 .custom-event-form h3 {
   margin: 0 0 4px 0;

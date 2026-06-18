@@ -44,15 +44,29 @@ def handle_events():
 
 
 
-@events_bp.route('/api/events/<event_id>', methods=['DELETE'])
+@events_bp.route('/api/events/<event_id>', methods=['DELETE', 'PUT'])
 def single_event(event_id):
     current_user_id = session.get('user_id')
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
     event = Event.query.filter_by(id=event_id, user_id=current_user_id).first_or_404()
-    todo = event.todo
+    
 
+    if request.method == 'PUT':
+        data = request.get_json()
+
+        event.title = data.get("title", event.title)
+        event.description = data.get("description", event.description)
+        event.start_time = parse_datetime(data.get("start_time"))
+        event.end_time = parse_datetime(data.get("end_time"))
+        event.color = data.get("color", event.color)
+
+        db.session.commit()
+
+        return jsonify({"status": "success"})
+    
     if request.method == 'DELETE':
+        todo = event.todo
         db.session.delete(event)
         if todo:
             db.session.delete(todo)

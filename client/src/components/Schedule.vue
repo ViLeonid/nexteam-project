@@ -304,10 +304,24 @@ const loadData = async () => {
 
 
 
+import { watch } from "vue";
 
 
+watch(
+    newEvent,
+    () => {
+        console.log("newEvent changed");
+    },
+    { deep: true }
+);
 
-
+watch(
+    customEvents,
+    () => {
+        console.log("customEvents changed");
+    },
+    { deep: true }
+);
 
 
 
@@ -315,10 +329,10 @@ const loadData = async () => {
 const allCalendarBlocks = computed(() => {
   const mappedEvents = customEvents.value.map(ev => ({
     id: ev.id === draftEventId ? draftEventId : `event-${ev.id}`,
-    title: ev.id === draftEventId ? newEvent.value.title : ev.title, // Синхроним ввод текста на лету
-    description: ev.id === draftEventId ? newEvent.value.description : ev.description,
+    title: ev.title,
+    description: ev.description,
     time: { start: formatTime(ev.start_time), end: formatTime(ev.end_time) },
-    colorScheme: ev.id === draftEventId ? newEvent.value.color : ev.color,
+    colorScheme: ev.color,
     isEditable: true // Разрешаем редактирование и растягивание
   }));
 

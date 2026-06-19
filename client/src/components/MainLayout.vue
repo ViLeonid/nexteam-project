@@ -40,6 +40,11 @@ const handleLogout = async () => {
             </h6>
             <ul class="nav flex-column mb-3">
               <li class="nav-item">
+                <router-link to="/" class="nav-link" exact-active-class="active">
+                  <i class="bi bi-book me-2"></i> Главная
+                </router-link>
+              </li>
+              <li class="nav-item">
                 <router-link to="/todos" class="nav-link" exact-active-class="active">
                   <i class="bi bi-book me-2"></i> Задачи
                 </router-link>

@@ -5,6 +5,7 @@ import Schedule from '../components/Schedule.vue'
 import MainLayout from '@/components/MainLayout.vue'
 import Analytics from '@/components/Analytics.vue'
 import Olympiads from '@/components/Olympiads.vue'
+import MainPage from '@/components/MainPage.vue'
 
 
 const router = createRouter({
@@ -14,6 +15,12 @@ const router = createRouter({
       path: '/',
       component: MainLayout,
       children: [
+        {
+          path: '',
+          name: 'MainPage',
+          component: MainPage,
+          meta: { requiresAuth: true }
+        },
         {
           path: 'todos',
           name: 'Todos',
@@ -41,7 +48,7 @@ const router = createRouter({
       ]
     },
     {
-      path: '/auth', // ИСПРАВЛЕНО: строго /auth вместо /register
+      path: '/auth',
       name: 'Auth',
       component: Auth,
       meta: { requiresGuest: true }

@@ -32,6 +32,10 @@
         <option value="10">10 класс</option>
         <option value="11">11 класс</option>
       </select>
+      <label class="checkbox">
+        <input type="checkbox" v-model="showOnlyAdded">
+        Только добавленные
+      </label>
       <div class="results-counter">
         Найдено
         <span>{{ sortedOlympiads.length }}</span>
@@ -144,7 +148,7 @@ const selectedSubject = ref("");
 const selectedClass = ref("");
 const addedOlympiads = ref([]);
 const searchQuery = ref("");
-
+const showOnlyAdded = ref(false);
 
 
 const AddInSchedule = async (id) => {
@@ -192,6 +196,11 @@ const GetOlympiads = () => {
 const sortedOlympiads = computed(() => {
   let arr = [...olympiads.value];
 
+  if (showOnlyAdded.value) {
+    arr = arr.filter(olympiad =>
+      addedOlympiads.value.includes(String(olympiad.id))
+    );
+  }
 
   if (searchQuery.value.trim()) {
     const words = searchQuery.value
@@ -637,6 +646,17 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   opacity: 1;
   filter: invert(1);
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  background: #0f1b34;
+  padding: 0 12px;
+  border-radius: 12px;
+  height: 48px;
+  border: 1px solid #243456;
 }
 
 /* ---------- Адаптив ---------- */

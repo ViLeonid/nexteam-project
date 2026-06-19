@@ -99,7 +99,7 @@ const handleAuth = async () => {
   width: 100vw;
   height: 100vh;
   font-family: sans-serif;
-  background-image: url('@/assets/bg2.png');
+  background-image: url('@/assets/backgrounds/bg2.png');
   background-size: cover;
   background-position: center;
   box-sizing: border-box;

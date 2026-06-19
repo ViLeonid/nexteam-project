@@ -82,3 +82,28 @@ def added_olympiads():
         "status": "success",
         "olympiads": olympiad_ids
     })
+
+
+@olympiads_bp.route('/added_olympiads_events', methods=['GET'])
+def added_olympiads_events():
+    current_user_id = session.get('user_id')
+
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    events = Event.query.filter_by(user_id=current_user_id).all()
+
+    output = []
+    for e in events:
+        if e.olympiad_id:
+            output.append({
+                "title": e.title,
+                "start_time": e.start_time,
+                "end_time": e.end_time,
+                "olympiad_id": e.olympiad_id
+            })
+
+    return jsonify({
+        "status": "success",
+        "events": output
+    })

@@ -1,6 +1,24 @@
 <template>
 
 <div class="calendar-layout-fixed">
+    <div class="color-label">
+      <span>Класс события</span>
+
+      <button
+        v-for="item in eventClasses"
+        :key="item.id"
+        type="button"
+        class="event-class-btn"
+        :class="{ active: newEvent.category === item.id }"
+        @click="selectClass(item)"
+      >
+        <span
+          class="color-dot"
+          :style="{ backgroundColor: item.color }"
+        ></span>
+        {{ item.name }}
+      </button>
+    </div>
     <div class="qalendar-holder">
         <Teleport v-if="teleportTarget" :to="teleportTarget">
           <addEventForm
@@ -38,6 +56,44 @@ api.defaults.withCredentials = true;
 const todos = ref([]);
 const customEvents = ref([]);
 const isFormActive = ref(false);
+const eventClasses = [
+  {
+    id: "sport",
+    name: "Спорт",
+    color: "#22c55e"
+  },
+  {
+    id: "rest",
+    name: "Отдых",
+    color: "#3b82f6"
+  },
+  {
+    id: "reading",
+    name: "Чтение",
+    color: "#f59e0b"
+  },
+  {
+    id: "olphys",
+    name: "Олфиз",
+    color: "#ef4444"
+  },
+  {
+    id: "school",
+    name: "Школа",
+    color: "#8b5cf6"
+  },
+  {
+    id: "food",
+    name: "Еда",
+    color: "#ec4899"
+  }
+];
+
+const selectClass = (item) => {
+  newEvent.value.category = item.id;
+  newEvent.value.color = item.color;
+};
+
 
 // Чистый объект для сброса формы
 const initialEventState = {
@@ -425,30 +481,37 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-/* Кастомизация полей ввода */
-.custom-input, .custom-textarea, .custom-select, .custom-input-date {
-  width: 100%;
-  padding: 10px 14px;
-  background-color: #0f172a;
-  border: 1px solid #475569;
-  border-radius: 10px;
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 14px;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.2s;
+.event-class-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-top: 8px;
+
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+
+    color: white;
+    cursor: pointer;
+    transition: .2s;
 }
 
-.custom-input:focus, .custom-textarea:focus, .custom-select:focus, .custom-input-date:focus {
-  border-color: #3b82f6;
+.event-class-btn:hover {
+    background: rgba(255,255,255,.08);
 }
 
-.custom-textarea {
-  resize: none;
-  height: 80px;
+.event-class-btn.active {
+    background: #2563eb; /* как активная страница */
 }
 
+.color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
 .time-inputs-grid {
   display: flex;
   flex-direction: column;

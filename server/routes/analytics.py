@@ -1,13 +1,77 @@
 from flask import Blueprint, jsonify, request, session
 from datetime import datetime
-
+from extensions import db
 from models import Event
 
 analytics_bp = Blueprint(
     "analytics",
     __name__
 )
+from datetime import datetime, timedelta
+@analytics_bp.route('/api/analytics/hours-of-subject')
+def hours_of_subject():
+    current_user_id = session.get('user_id')
 
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+    
+    event_class = "blue"
+    labels = []
+    values = []
+    for i in range(9, -1, -1):
+        day = datetime.now().date() - timedelta(days=i)
+
+        events = Event.query.filter(
+            Event.user_id == current_user_id,
+            db.func.date(Event.start_time) == day,
+            Event.color == event_class
+        ).all()
+
+        hours = 0
+
+        for event in events:
+            duration = event.end_time - event.start_time
+            hours += duration.total_seconds() / 3600
+
+        labels.append(day.strftime('%d.%m'))
+        values.append(round(hours, 1))
+
+    return jsonify({
+        "labels": labels,
+        "values": values
+    })
+
+@analytics_bp.route('/api/analytics/tasks-last-10-days')
+def tasks_last_10_days():
+    current_user_id = session.get('user_id')
+
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    labels = []
+    values = []
+
+    for i in range(9, -1, -1):
+        day = datetime.now().date() - timedelta(days=i)
+
+        events = Event.query.filter(
+            Event.user_id == current_user_id,
+            db.func.date(Event.start_time) == day
+        ).all()
+
+        hours = 0
+
+        for event in events:
+            duration = event.end_time - event.start_time
+            hours += duration.total_seconds() / 3600
+
+        labels.append(day.strftime('%d.%m'))
+        values.append(round(hours, 1))
+
+    return jsonify({
+        "labels": labels,
+        "values": values
+    })
 
 @analytics_bp.route('/api/analytics/today', methods=['GET'])
 def get_today_analytics():
@@ -37,10 +101,31 @@ def get_today_analytics():
     # Карта цветов для категорий
         # Карта неоновых цветов
     color_map = {
-        "blue": {"label": "Обычные дела", "hex": "#00f0ff"},     # Электрический циан
-        "red": {"label": "Дедлайны / Задачи", "hex": "#ff007f"},  # Неоновый розовый
-        "purple": {"label": "Задачи от ИИ", "hex": "#a020f0"}    # Неоновый фиолетовый
+    "green": {
+        "label": "Спорт",
+        "hex": "#22c55e"
+    },
+    "blue": {
+        "label": "Отдых",
+        "hex": "#3b82f6"
+    },
+    "yellow": {
+        "label": "Чтение",
+        "hex": "#f59e0b"
+    },
+    "red": {
+        "label": "Олфиз",
+        "hex": "#ef4444"
+    },
+    "purple": {
+        "label": "Школа",
+        "hex": "#8b5cf6"
+    },
+    "orange": {
+        "label": "Еда",
+        "hex": "#f97316"
     }
+}
 
     
 

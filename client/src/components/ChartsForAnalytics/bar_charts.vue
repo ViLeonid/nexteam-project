@@ -1,44 +1,37 @@
 <template>
   <div class="analytics-card">
     <div class="header">
-      <h3>Задачи за 10 дней</h3>
+      <h3>Отдых за 10 дней</h3>
       <span class="subtitle">Часы</span>
     </div>
 
-    <div v-if="loaded" class="chart-wrapper">
-      <Line :data="chartData" :options="chartOptions" />
+    <div v-if="loaded" class="chart-wrapper"> 
+      <Bar :data="chartData" :options="chartOptions" />
     </div>
-
     <div v-else class="loading">Загрузка...</div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Line } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
+import { Bar } from 'vue-chartjs'
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  BarElement, 
+  CategoryScale, 
+  LinearScale
 } from 'chart.js'
 import api from '@/api'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-)
+// Обязательно регистрируем модули Chart.js
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const loaded = ref(false)
 const chartData = ref(null)
 
+// 2. Настройки (Опции) диаграммы
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -48,21 +41,31 @@ const chartOptions = {
   scales: {
     x: { grid: { display: false } },
     y: { beginAtZero: true }
+  },
+  title: {
+    display: true,
+    text: 'Статистика продаж за полгода' // Заголовок
   }
 }
 
+
 onMounted(async () => {
   try {
-    const { data } = await api.get('/api/analytics/tasks-last-10-days')
+    const { data } = await api.get('/api/analytics/hours-of-subject')
 
     chartData.value = {
       labels: data.labels,
       datasets: [
         {
-          data: data.values,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.15)',
-          tension: 0.4
+            label: 'Часы отдыха', // Название столбцов в легенде
+            data: data.values,
+            backgroundColor: '#3b82f6',
+            borderRadius: 8,          // Скругляет все углы столбца
+            borderRadius: 8,          // Скругляет все углы столбца
+            borderSkipped: false,  // Раскомментируйте, если нужно скруглить и нижние углы тоже
+
+            hoverBackgroundColor: '#3b82f6', // Цвет столбца при наведении
+      
         }
       ]
     }

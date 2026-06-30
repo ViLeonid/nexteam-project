@@ -9,7 +9,6 @@
         :key="item.id"
         type="button"
         class="event-class-btn"
-        :class="{ active: newEvent.category === item.id }"
         @click="selectClass(item)"
       >
         <span
@@ -56,42 +55,53 @@ api.defaults.withCredentials = true;
 const todos = ref([]);
 const customEvents = ref([]);
 const isFormActive = ref(false);
+
 const eventClasses = [
   {
     id: "sport",
     name: "Спорт",
-    color: "#22c55e"
+    color: "#22c55e",
+    scheme: "green"
   },
   {
     id: "rest",
     name: "Отдых",
-    color: "#3b82f6"
+    color: "#3b82f6",
+    scheme: "blue"
   },
   {
     id: "reading",
     name: "Чтение",
-    color: "#f59e0b"
+    color: "#f59e0b",
+    scheme: "yellow"
   },
   {
     id: "olphys",
     name: "Олфиз",
-    color: "#ef4444"
+    color: "#ef4444",
+    scheme: "red"
   },
   {
     id: "school",
     name: "Школа",
-    color: "#8b5cf6"
+    color: "#8b5cf6",
+    scheme: "purple"
   },
   {
     id: "food",
     name: "Еда",
-    color: "#ec4899"
+    color: "#f97316",
+    scheme: "orange"
   }
 ];
-
+const current_color = ref();
 const selectClass = (item) => {
-  newEvent.value.category = item.id;
-  newEvent.value.color = item.color;
+  current_color.value=item.scheme;
+  newEvent.value.color = item.scheme;
+  const draft = customEvents.value.find(ev => ev.id === draftEventId);
+  if (draft) {
+    draft.color = item.scheme;
+  }
 };
 
 
@@ -114,7 +124,7 @@ const config = ref({
   locale: "ru-RU",
   defaultMode: "week",
   showCurrentTime: true,
-  isInteractive: true, // Включает возможность перетаскивания и растягивания блоков
+  isInteractive: true,
   style: {
     colorSchemes: {
       blue: { color: '#ffffff', backgroundColor: 'rgba(59, 130, 246, 0.5)', border: '4px solid #3b82f6' },
@@ -175,17 +185,6 @@ const restoreSavedScroll = async () => {
     }
   });
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 

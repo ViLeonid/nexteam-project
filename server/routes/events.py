@@ -72,36 +72,4 @@ def single_event(event_id):
             db.session.delete(todo)
         db.session.commit()
         return jsonify({'status': 'success'})
-from datetime import datetime, timedelta
 
-@events_bp.route('/api/analytics/tasks-last-10-days')
-def tasks_last_10_days():
-    current_user_id = session.get('user_id')
-
-    if not current_user_id:
-        return jsonify({"error": "Неавторизованный доступ"}), 401
-
-    labels = []
-    values = []
-
-    for i in range(9, -1, -1):
-        day = datetime.now().date() - timedelta(days=i)
-
-        events = Event.query.filter(
-            Event.user_id == current_user_id,
-            db.func.date(Event.start_time) == day
-        ).all()
-
-        hours = 0
-
-        for event in events:
-            duration = event.end_time - event.start_time
-            hours += duration.total_seconds() / 3600
-
-        labels.append(day.strftime('%d.%m'))
-        values.append(round(hours, 1))
-
-    return jsonify({
-        "labels": labels,
-        "values": values
-    })

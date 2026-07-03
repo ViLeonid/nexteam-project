@@ -30,7 +30,7 @@ def handle_todos():
                 description=data.get('description'),
                 is_done=data.get('is_done', False),
                 deadline=parse_datetime(data.get('deadline')),
-                user_id=current_user_id # ИСПРАВЛЕНО: Передаем обязательный внешний ключ
+                user_id=current_user_id
             )
             new_event = Event(
                 title=data.get('title'),

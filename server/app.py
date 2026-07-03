@@ -10,6 +10,7 @@ from routes.todos import todos_bp
 from routes.events import events_bp
 from routes.analytics import analytics_bp
 from routes.olympiads import olympiads_bp
+from routes.focus import focus_bp
 from parsing_olympiads import parse_olympiads
 from extensions import db
 
@@ -20,6 +21,7 @@ app.register_blueprint(todos_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(olympiads_bp)
+app.register_blueprint(focus_bp)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True

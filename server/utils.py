@@ -24,7 +24,14 @@ def parse_datetime(dt_str):
         return datetime.strptime(dt_str, '%Y-%m-%dT%H:%M')
     except ValueError:
         return None
-    
+
+def parse_datetime_with_seconds(dt_str):
+    if not dt_str:
+        return None
+    try:
+        return datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        return None
 
 def map_date(i):
     x=[]

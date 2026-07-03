@@ -64,6 +64,11 @@ const handleLogout = async () => {
                   <i class="bi bi-book me-2"></i> Олимпиады
                 </router-link>
               </li>
+              <li class="nav-item">
+                <router-link to="/focus" class="nav-link" active-class="active">
+                  <i class="bi bi-book me-2"></i> Фокус
+                </router-link>
+              </li>
             </ul>
 
             <hr class="text-secondary mx-3">

@@ -8,6 +8,7 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     todos = db.relationship('Todo', backref='user', lazy=True, cascade="all, delete-orphan")
     events = db.relationship('Event', backref='user', lazy=True, cascade="all, delete-orphan")
+    focussessions = db.relationship('FocusSession', backref='user', lazy=True, cascade="all, delete-orphan")
 
 class Todo(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
@@ -37,4 +38,12 @@ class Olympiads(db.Model):
     url = db.Column(db.String(100))
     classes = db.Column(db.String(20))
     level_perechnya = db.Column(db.String(100))
+
+class FocusSession(db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
+    subject = db.Column(db.String(50), nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+    real_time = db.Column(db.Integer, nullable = False)
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 

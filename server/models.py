@@ -41,7 +41,11 @@ class Olympiads(db.Model):
 
 class FocusSession(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
+    topic = db.Column(db.String(100), nullable=False)
+    goal = db.Column(db.Text, nullable=True)
     subject = db.Column(db.String(50), nullable=False)
+    is_tasks = db.Column(db.Boolean, default=False)  
+    count_tasks = db.Column(db.Integer, nullable=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     real_time = db.Column(db.Integer, nullable = False)

@@ -6,6 +6,6 @@ with app.app_context():
     try:
         # Удаляем только таблицу todo
         FocusSession.__table__.drop(db.engine)
-        print("Таблица Olympiads успешно удалена!")
+        print("Таблица FocusSession успешно удалена!")
     except Exception as e:
         print(f"Ошибка при удалении таблицы: {e}")

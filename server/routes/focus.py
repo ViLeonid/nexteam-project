@@ -22,7 +22,11 @@ def focus():
                     "start_time": fs.start_time,
                     "end_time": fs.end_time,
                     "subject": fs.subject,
-                    "real_time": fs.real_time
+                    "real_time": fs.real_time,
+                    "is_tasks": fs.is_tasks,
+                    "topic": fs.topic,
+                    "goal": fs.goal,
+                    "count_tasks": fs.count_tasks
                 })
     return jsonify({'status': 'success', 'focus_sessions': output})
 
@@ -38,6 +42,10 @@ def add_fs():
         end_time=parse_datetime_with_seconds(fs.get("end_time")),
         subject=fs.get("subject"),
         real_time=fs.get("real_time"),
+        is_tasks=fs.get("is_tasks"),
+        topic=fs.get("topic"),
+        goal=fs.get("goal"),
+        count_tasks=fs.get("count_tasks"),
         user_id=current_user_id
     )
     db.session.add(new_fs)

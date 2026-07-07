@@ -11,167 +11,208 @@
         ⛶ Полный экран
       </button>
     </div>
+    <div class="focus-block">
+        <div class="focus-card settings-card" v-if="!isRunning">
 
-    <div class="focus-card">
+            <div class="focus-left">
+                <div class="info-block">
+                    <div class="settings-el">
+                        <label>Предмет</label>
+                        <select v-model="subject">
+                            <option>Физика</option>
+                            <option>Математика</option>
+                            <option>Информатика</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-el">
+                        <label>Тема</label>
+                        <input
+                            v-model="topic"
+                            placeholder="Например: Электростатика"
+                        >
+                    </div>
+                    
+                    <div class="settings-el">
+                        <label>Цель</label>
+                        <input
+                            v-model="goal"
+                            placeholder="Что планируешь сделать?"
+                        >
+                    </div>
+                    
 
-      <div class="focus-left">
+                    <div class="tasks-checkbox">
+                        <input type="checkbox" v-model="is_tasks">
+                        <span>Решение задач</span>
+                    </div>
 
-        <div class="status">
-          <span class="dot"></span>
-          {{ isRunning ? "СЕССИЯ АКТИВНА" : "ГОТОВ К НАЧАЛУ" }}
-        </div>
-
-        <div class="subject-card">
-          <div class="subject-icon">
-            📚
-          </div>
-
-          <div>
-            <h2>{{ subject }}</h2>
-            <p>{{ topic || "Без темы" }}</p>
-          </div>
-        </div>
-
-        <div class="info-block">
-
-          <label>Тема</label>
-          <input
-              v-model="topic"
-              placeholder="Например: Электростатика"
-          >
-
-          <label>Цель</label>
-          <input
-              v-model="goal"
-              placeholder="Что планируешь сделать?"
-          >
-
-          <label>Предмет</label>
-
-          <select v-model="subject">
-            <option>Физика</option>
-            <option>Математика</option>
-            <option>Информатика</option>
-          </select>
-
-          <div class="tasks-checkbox">
-            <input
-                type="checkbox"
-                v-model="is_tasks"
-            >
-
-            <span>Решение задач</span>
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="focus-right">
-
-        <div class="timer-circle">
-
-            <svg
-                class="progress-ring"
-                width="320"
-                height="320"
-            >
-
-                <!-- фон -->
-
-                <circle
-                    class="ring-bg"
-                    cx="160"
-                    cy="160"
-                    r="130"
-                />
-
-                <!-- прогресс -->
-
-                <circle
-                    class="ring-progress"
-                    cx="160"
-                    cy="160"
-                    r="130"
-                    :stroke-dasharray="circumference"
-                    :stroke-dashoffset="offset"
-                />
-
-            </svg>
-
-            <div class="timer-content">
-
-                <div class="mode-title">
-                    {{ isRunning ? "ФОКУС" : "ГОТОВ" }}
                 </div>
+                <div class="info-block">
+                    <div class="settings-el">
+                        <label>Режим таймера</label>
+                        <select v-model="mode">
+                            <option>Помодоро</option>
+                            <option>Пробный тур</option>
+                            <option>Бесконечный</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-el">
+                        <label>Фон</label>
+                        <select v-model="bg">
+                            <option>Лес</option>
+                            <option>Горы</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-el">
+                        <label>Музыка/Шум для концентрации</label>
+                        <select v-model="music">
+                            <option>Дождь</option>
+                            <option>-</option>
+                        </select>
+                    </div>
+                    
 
-                <div class="timer">
-                    {{ formattedTime }}
-                </div>
-
-                <div class="mode">
-                    {{ isRunning ? "Сессия идет..." : "Нажмите старт" }}
                 </div>
 
             </div>
+        </div>
+        <div class="focus-card timer-card" :class="{'istimerfocus': isRunning, 'fullscreenFocus': isfullscreen}">
+            <div :class="[isfullscreen ? 'fullscreenRight' : 'focus-right']">
+                <div class="timer-circle" :style="{height: timer_h + 'px'}">
+                    <svg class="progress-ring" width="340" height="340"  v-if="isRunning && (mode == 'Помодоро' || mode == 'Пробный тур')">
+
+                        <!-- фон -->
+                            <circle class="ring-bg" cx="170" cy="170" r="160"/>
+
+                            <!-- прогресс -->
+
+                            <circle
+                                class="ring-progress"
+                                cx="170"
+                                cy="170"
+                                r="160"
+                                :stroke-dasharray="circumference"
+                                :stroke-dashoffset="offset"
+                            />
+                        
+                    </svg>
+                    
+                    
+
+                    <div class="timer-content">
+
+                        <div class="mode-title">
+                            {{ isRunning ? "ФОКУС" : "ГОТОВ" }}
+                        </div>
+                        
+                        <div class="timer">
+                            {{ formattedTime }}
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 10px; ">
+                            <div class="mode">
+                                {{ isRunning ? "Сессия идет..." : "Нажмите начать" }}
+                            </div> 
+                            <div class="mode" v-if="isRunning">
+                                {{ isbreak  ? "Отдых" : "Концентрация" }}
+                            </div>
+                        </div>
+                        
+                        <div v-if="isRunning && mode=='Помодоро'" class="mode">Цикл: {{ actual_cycles }}/{{ cycles_count }}</div>
+
+                    </div>
+
+                </div>
+                <div v-if="!isRunning && mode=='Помодоро'">
+                    <div class="pomodoro-timer">
+                        <label>Время одного цикла</label>
+                        <input type="number" v-model="cycle_time">м
+                    </div>
+                    <div class="pomodoro-timer">
+                        <label>Время одного перерыва</label>
+                        <input type="number" v-model="break_time">м
+                    </div>
+                    <div class="pomodoro-timer">
+                        <label>Количество циклов</label>
+                        <input type="number" v-model="cycles_count">
+                    </div>
+                </div>
+                <div v-else-if="!isRunning && mode=='Пробный тур'">
+                    <div class="tour-timer">
+                        <label>Время тура</label>
+                        <input type="number" v-model="tour_time">м
+                    </div>
+                </div>
+                <div class="buttons">
+
+                <button
+                    class="start"
+                    @click="startSession"
+                    v-if="!isRunning"
+                >
+                    Начать
+                </button>
+
+                <button
+                    class="pause"
+                    @click="pauseSession"
+                    v-if="isRunning"
+                >
+                    Пауза
+                </button>
+
+                <button
+                    class="finish"
+                    @click="finishSession"
+                    v-if="isRunning"
+                >
+                    Завершить
+                </button>
+                
+                <button
+                    class="subtractseconds"
+                    @click="seconds -= 30"
+                    v-if="isRunning"
+                >
+                    -30 сек
+                </button>
+                <button
+                    class="addseconds"
+                    @click="seconds += 30"
+                    v-if="isRunning"
+                >
+                    +30 сек
+                </button>
+
+                </div>
+                
+                <div
+                    class="tasks-counter" :class="{'fullscreenTasks': isfullscreen}"
+                    v-if="isRunning && is_tasks"
+                >
+
+                    <div class="counter-title">
+                        Решено задач
+                    </div>
+
+                    <div class="counter">
+
+                        <button @click="count_tasks--">
+                        −
+                        </button>
+
+                        <span>{{ count_tasks }}</span>
+
+                        <button @click="count_tasks++">
+                        +
+                        </button>
+                    </div>
+                </div>
 
         </div>
-
-        <div class="buttons">
-
-          <button
-              class="start"
-              @click="startSession"
-              v-if="!isRunning"
-          >
-            ▶ Начать
-          </button>
-
-          <button
-              class="pause"
-              @click="pauseSession"
-              v-if="isRunning"
-          >
-            ⏸ Пауза
-          </button>
-
-          <button
-              class="finish"
-              @click="finishSession"
-              v-if="isRunning"
-          >
-            ■ Завершить
-          </button>
-
         </div>
-
-        <div
-            class="tasks-counter"
-            v-if="isRunning && is_tasks"
-        >
-
-          <div class="counter-title">
-            Решено задач
-          </div>
-
-          <div class="counter">
-
-            <button @click="count_tasks--">
-              −
-            </button>
-
-            <span>{{ count_tasks }}</span>
-
-            <button @click="count_tasks++">
-              +
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
     </div>
 
     <div class="history-card">
@@ -182,7 +223,7 @@
 
         <div v-if="allFS.length" class="history-table">
 
-            <div class="table-head">
+            <div class="table-head" style="font-size: 20px;">
                 <div>Дата</div>
                 <div>Предмет</div>
                 <div>Тема</div>
@@ -225,7 +266,7 @@
                     {{ fs.real_time }} сек
                 </div>
 
-                <div class="tasks">
+                <div class="tasks" v-if="fs.count_tasks != 0">
                     {{ fs.count_tasks }}
                 </div>
 
@@ -248,29 +289,63 @@
 <script setup>
 import { ref, computed, onUnmounted, onMounted } from "vue"
 import api from '@/api';
+import infinityImg from '@/assets/infinity3.jpg'
+import { useToast } from "vue-toastification"
+
 
 const subject = ref("Физика");
-
 let seconds = ref(0);
 const topic = ref();
 const goal = ref();
 const is_tasks = ref();
+const music = ref();
+const bg = ref();
+const mode = ref("Помодоро");
 const count_tasks = ref(0);
 const isRunning = ref(false);
 let start_time = null;
 let end_time = null;
 const allFS = ref([]);
 let interval = null;
-
-const radius = 130
-const circumference = 2 * Math.PI * radius
+const radius = 160;
+const circumference = 2 * Math.PI * radius;
+let cycle_time = ref(25);
+let break_time = ref(5);
+let cycles_count = ref(4);
+let tour_time = ref();
+const toast = useToast();
+const isfullscreen = ref(false);
 
 const progress = computed(() => {
-    // пока пример: полный круг за час
-    const max = 100
-    return Math.min(seconds.value / max, 1)
-})
+    if(mode.value=="Помодоро"){
+        if(isbreak.value){
+            return Math.min((seconds.value % ((cycle_time.value + break_time.value) * 60) - cycle_time.value * 60) / (break_time.value * 60), 1);
+        }
+        else{
+            return Math.min(seconds.value % ((cycle_time.value + break_time.value) * 60) / (cycle_time.value * 60), 1);
+        }
+    }
+    else if(mode.value=="Пробный тур"){
+        return Math.min(seconds.value % (tour_time.value * 60)  / (tour_time.value * 60), 1);
+    }
+    else if(mode.value=="Бесконечный"){
 
+    }
+
+    
+})
+const timer_h = computed(() => {
+    if (isRunning.value){
+        return 340;
+    }
+    return 200;
+})
+const isbreak = computed(() => {
+    return seconds.value / 60 % (cycle_time.value + break_time.value) > cycle_time.value;
+})
+const actual_cycles = computed(() => {
+    return  1 + Math.trunc(seconds.value / 60 / (cycle_time.value + break_time.value));
+})
 const offset = computed(() => {
     return circumference * (1 - progress.value)
 })
@@ -288,13 +363,24 @@ const formattedTime = computed(() => {
 })
 
 function startSession(){
-  if (seconds.value === 0) {
-    start_time = new Date();
+  console.log(topic.value);
+  if (topic.value){
+    if (seconds.value === 0) {
+        start_time = new Date();
+    }
+    isRunning.value=true
+    interval=setInterval(()=>{
+        seconds.value++
+    },1000)
   }
-  isRunning.value=true
-  interval=setInterval(()=>{
-    seconds.value++
-  },1000)
+  else{
+    toast.error("Заполните тему!", {
+        // Привязываем наш кастомный класс к контейнеру и прогресс-бару
+        toastClassName: "nexteam-toast",
+        bodyClassName: "nexteam-toast-body",
+        hideProgressBar: false, // оставляем полосу, она будет стильной
+    });
+  }
 }
 
 function pauseSession(){
@@ -320,28 +406,169 @@ const getFS = () => {
 
 function toggleFullscreen(){
   if(!document.fullscreenElement){
+    isfullscreen.value=true
     document.documentElement.requestFullscreen()
   }else{
+    isfullscreen.value=false
     document.exitFullscreen()
   }
+
 }
 
 onUnmounted(()=>clearInterval(interval));
 onMounted(getFS);
 </script>
+
+<style>
+.fullscreenTasks{
+    margin:20px;
+}
+.fullscreenRight{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    width:100%;
+    height: 100%;
+    margin-bottom: 70px;
+}
+.fullscreenFocus{
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 99;
+
+    border-radius: 0 !important;
+    border: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0;
+}
+.Vue-Toastification__toast.nexteam-toast {
+  background-color: #121212 !important;
+  border: 3px solid rgba(246, 246, 246, 0.8) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.6) !important;
+}
+
+.Vue-Toastification__progress-bar {
+  background: #ffffff !important;
+}
+
+</style>
+
+
 <style scoped>
+
+.pomodoro-timer,
+.tour-timer{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin:5px 0;
+    color:#cfcfcf;
+}
+
+.pomodoro-timer input,
+.tour-timer input{
+    width:60px;
+    padding:3px 4px;
+
+    background:#0b0b0b;
+    color:#fff;
+
+    border:2px solid rgba(105,105,105,.8);
+    border-radius:10px;
+
+    text-align:center;
+    outline:none;
+}
+
+.pomodoro-timer input:focus,
+.tour-timer input:focus{
+    border-color:#fff;
+    box-shadow:0 0 12px rgba(255,255,255,.15);
+}
+
+
+
+.progress-ring{
+    position:absolute;
+    transform:rotate(-90deg);
+    overflow:visible;
+}
+.progress-infinity{
+    overflow:visible;
+}
+
+.neon-border{
+    border:1px solid var(--neon-border);
+
+    box-shadow:
+        0 0 10px rgba(255,255,255,0.04),
+        inset 0 0 0 rgba(255,255,255,0);
+
+    transition:0.25s ease;
+}
+
+.neon-border:hover{
+    border:1px solid var(--neon-border-strong);
+
+    box-shadow:
+        0 0 18px var(--neon-glow),
+        0 0 40px rgba(255,255,255,0.06);
+}
+/* =========================
+   GLOBAL RESET / BASE
+========================= */
 
 *{
     box-sizing:border-box;
+    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
 .focus-page{
     min-height:100vh;
     padding:40px;
-    color:white;
+    color:#ffffff;
+
     background:
-        radial-gradient(circle at top,#2c1b55 0%,#111827 35%,#0b1120 100%);
+        radial-gradient(circle at top,
+        rgba(255,255,255,0.06),
+        transparent 35%),
+
+        radial-gradient(circle at bottom,
+        rgba(255,255,255,0.03),
+        transparent 45%),
+
+        #050505;
+
+    overflow:hidden;
+    position:relative;
 }
+
+/* subtle night glow overlay */
+.focus-page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+
+    background:
+        radial-gradient(circle at center,
+        rgba(255,255,255,0.03),
+        transparent 70%);
+}
+
+/* =========================
+   HEADER
+========================= */
 
 .focus-header{
     display:flex;
@@ -351,614 +578,606 @@ onMounted(getFS);
 }
 
 .focus-header h1{
-    font-size:42px;
-    font-weight:700;
+    font-size:48px;
+    font-weight:800;
+    letter-spacing:3px;
+    text-transform:uppercase;
     margin:0;
+
+    color:#fff;
+
+    text-shadow:
+        0 0 10px rgba(255,255,255,0.15);
 }
 
 .focus-header p{
     margin-top:8px;
-    color:#9ca3af;
+    color:#8a8a8a;
+    letter-spacing:1.5px;
 }
 
+/* =========================
+   FULLSCREEN BUTTON
+========================= */
+
 .fullscreen-btn{
-    background:linear-gradient(135deg,#7c3aed,#5b21b6);
-    color:white;
+    background:#ffffff;
+    position: fixed;
+    right: 45px;
     border:none;
     border-radius:14px;
     padding:14px 24px;
+
     cursor:pointer;
-    font-size:15px;
-    transition:.25s;
-    box-shadow:0 10px 30px rgba(124,58,237,.35);
+    font-size:14px;
+    font-weight:600;
+
+    transition:0.25s ease;
+    z-index: 999;
+    box-shadow:
+        0 0 20px rgba(255,255,255,0.25);
 }
 
 .fullscreen-btn:hover{
     transform:translateY(-2px);
+
+    box-shadow:
+        0 0 35px rgba(255,255,255,0.45);
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.focus-block{
+    display:flex;
+    flex-wrap:wrap;
+    gap:30px;
 }
 
 .focus-card{
-
+    
     display:flex;
     justify-content:space-between;
-    gap:60px;
 
-    background:rgba(24,31,49,.75);
-    backdrop-filter:blur(18px);
+    background:rgba(10,10,10,0.72);
+    backdrop-filter:blur(28px);
 
-    border:1px solid rgba(255,255,255,.08);
-
+    border: 3px solid rgba(208, 208, 208);
     border-radius:28px;
 
-    padding:45px;
-
     box-shadow:
-    0 0 40px rgba(0,0,0,.35);
+        0 0 20px rgba(136, 136, 136, 0.85),
+        inset 0 0 20px rgba(136, 136, 136, 0.85);
 
+    transition:0.3s ease;
 }
+
+
+
+/* =========================
+   LEFT PANEL
+========================= */
 
 .focus-left{
     flex:1;
-}
-
-.focus-right{
-
-    width:430px;
-
     display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
+    flex-wrap:wrap;
+    gap:32px;
 }
 
-.status{
-
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-
-    padding:8px 16px;
-
-    border-radius:30px;
-
-    background:rgba(34,197,94,.12);
-
-    color:#4ade80;
-
-    font-weight:600;
-
-    margin-bottom:30px;
-
-}
-
-.dot{
-
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:#4ade80;
-
-    box-shadow:
-    0 0 12px #4ade80;
-
-}
-
-.subject-card{
-
-    display:flex;
-    align-items:center;
-    gap:20px;
-
-    margin-bottom:35px;
-
-}
-
-.subject-icon{
-
-    width:72px;
-    height:72px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    border-radius:20px;
-
-    font-size:34px;
-
-    background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-    box-shadow:0 15px 35px rgba(124,58,237,.4);
-
-}
-
-.subject-card h2{
-
-    margin:0;
-    font-size:34px;
-
-}
-
-.subject-card p{
-
-    margin-top:6px;
-    color:#b7bfd0;
-
+.settings-card{
+    flex:0 0 51vw;
+    padding:30px;
 }
 
 .info-block{
-
     display:flex;
     flex-direction:column;
     gap:14px;
-
+    width:22vw;
 }
+
+.settings-el{
+    margin:10px;
+}
+
+/* =========================
+   LABELS
+========================= */
 
 .info-block label{
+    color:#bdbdbd;
+    font-size:14px;
+    letter-spacing:1px;
 
-    color:#b7bfd0;
-    font-size:15px;
-
+    margin-left:8px;
+    margin-bottom:6px;
+    display:block;
 }
+
+/* =========================
+   INPUTS
+========================= */
 
 .info-block input,
 .info-block select{
-
     width:100%;
 
-    background:#111827;
+    background:#0b0b0b;
+    color:#ffffff;
 
-    color:white;
-
-    border:1px solid rgba(255,255,255,.08);
-
+    border:2px solid rgba(105, 105, 105, 0.8);
     border-radius:14px;
 
     padding:14px 16px;
 
     outline:none;
 
-    transition:.25s;
-
+    transition:0.25s ease;
 }
 
 .info-block input:focus,
 .info-block select:focus{
+    border-color:#ffffff;
 
-    border-color:#7c3aed;
-    box-shadow:0 0 15px rgba(124,58,237,.4);
-
+    box-shadow:
+        0 0 18px rgba(255,255,255,0.18);
 }
 
-.tasks-checkbox{
+/* =========================
+   CHECKBOX
+========================= */
 
+.tasks-checkbox{
     margin-top:10px;
+    margin-left:30px;
 
     display:flex;
     align-items:center;
     gap:12px;
 
+    color:#cfcfcf;
 }
 
 .tasks-checkbox input{
-
     width:18px;
     height:18px;
 
+    accent-color:#ffffff;
 }
 
-.timer-circle{
+/* =========================
+   RIGHT PANEL
+========================= */
 
-    position:relative;
-
-    width:320px;
-    height:320px;
-
+.timer-card{
+    flex:1;
     display:flex;
+    padding:10px;
+}
+.istimerfocus{
+    background-image: url("@/assets/focus_images/fi1.png");
+    background-position: center center; 
+    background-repeat: no-repeat;           
+    background-size: cover;
+}
+
+.focus-right{
+    display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
+    width:100%;
+}
 
+/* =========================
+   TIMER CIRCLE
+========================= */
+
+.timer-circle{
+    position:relative;
+    width: 340px;
+    display: flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .progress-ring{
-
     position:absolute;
-
     transform:rotate(-90deg);
-
 }
 
 .ring-bg{
-
     fill:none;
 
-    stroke:#3b3653;
-
+    stroke: rgba(31, 31, 31, 0.4);
     stroke-width:10;
-
+    filter: blur(2px);
 }
 
 .ring-progress{
-
     fill:none;
 
-    stroke:#7c3aed;
-
+    stroke:#ffffff;
     stroke-width:10;
 
     stroke-linecap:round;
 
-    transition:stroke-dashoffset .5s linear;
+    transition:stroke-dashoffset 0.5s linear;
 
-    filter:drop-shadow(0 0 12px rgba(124,58,237,.7));
-
+    filter:
+        drop-shadow(0 0 8px rgba(255,255,255,0.6))
+        drop-shadow(0 0 18px rgba(255,255,255,0.25));
 }
 
+/* =========================
+   TIMER TEXT
+========================= */
+
 .timer-content{
-
     position:relative;
-
     z-index:5;
 
     text-align:center;
-
 }
 
 .mode-title{
-
-    color:#d4d4d8;
-
+    color:#e5e5e5;
     font-size:20px;
+    letter-spacing:3px;
 
     margin-bottom:15px;
-
-    letter-spacing:2px;
-
 }
 
 .timer{
-
-    font-size:72px;
+    font-size:68px;
     font-weight:700;
-    margin-bottom:12px;
+
+    letter-spacing:4px;
+
+    color:#ffffff;
+
+    text-shadow:
+        0 0 12px rgba(255,255,255,0.15);
 }
 
 .mode{
-
-    color:#9ca3af;
+    color:#e5e5e5;
 }
 
-.buttons{
+/* =========================
+   BUTTONS
+========================= */
 
+.buttons{
     display:flex;
     gap:18px;
     flex-wrap:wrap;
     justify-content:center;
 
+    margin-top:20px;
 }
 
 .buttons button{
-
     border:none;
 
     padding:15px 28px;
 
     border-radius:14px;
 
-    color:white;
-
-    font-size:16px;
+    font-size:14px;
+    font-weight:600;
 
     cursor:pointer;
 
-    transition:.25s;
-
+    transition:0.25s ease;
 }
 
-.buttons button:hover{
+/* START */
+.start{
+    background:#ffffff;
+    color:#000000;
 
+    box-shadow:
+        0 0 20px rgba(255,255,255,0.25);
+}
+
+.start:hover{
     transform:translateY(-3px);
 
+    box-shadow:
+        0 0 45px rgba(255,255,255,0.55);
 }
 
-.start{
-
-    background:linear-gradient(135deg,#7c3aed,#5b21b6);
-
-    box-shadow:0 10px 25px rgba(124,58,237,.35);
-
-}
-
+/* PAUSE */
 .pause{
+    background:#121212;
+    color:#ffffff;
 
-    background:#f59e0b;
-
+    border:1px solid rgba(255,255,255,0.15);
 }
 
+/* FINISH */
 .finish{
+    background:#0e0e0e;
+    color:#ffffff;
 
-    background:#dc2626;
-
+    border:1px solid rgba(255,255,255,0.12);
 }
+
+/* =========================
+   TASK COUNTER
+========================= */
 
 .tasks-counter{
-
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
     margin-top:35px;
-
     width:260px;
 
-    background:#111827;
+    background:#0b0b0b;
 
     border-radius:18px;
 
     padding:22px;
 
-    border:1px solid rgba(255,255,255,.06);
-
+    border:2px solid rgba(255,255,255,0.8);
 }
 
 .counter-title{
-
-    color:#cbd5e1;
-
+    color:#cfcfcf;
     margin-bottom:16px;
-
     text-align:center;
-
 }
 
 .counter{
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
-
 }
 
 .counter span{
-
     font-size:32px;
     font-weight:700;
-
+    color:#ffffff;
 }
 
 .counter button{
-
     width:48px;
     height:48px;
 
     border:none;
-
     border-radius:14px;
 
-    background:#7c3aed;
+    background:#ffffff;
+    color:#000000;
 
-    color:white;
-
-    font-size:24px;
+    font-size:20px;
 
     cursor:pointer;
 
+    box-shadow:0 0 18px rgba(255,255,255,0.25);
 }
 
-.history-card{
+/* =========================
+   HISTORY CARD
+========================= */
 
+.history-card{
     margin-top:40px;
 
-    background:rgba(22,28,44,.82);
-
-    border-radius:22px;
+    background:#070707;
 
     overflow:hidden;
+    border: 3px solid rgba(208, 208, 208);
+    border-radius:28px;
 
-    border:1px solid rgba(255,255,255,.06);
-
+    box-shadow:
+        0 0 20px rgba(136, 136, 136, 0.85),
+        inset 0 0 20px rgba(136, 136, 136, 0.85);
 }
 
 .history-header{
-
     padding:26px 30px;
 
-    border-bottom:1px solid rgba(255,255,255,.05);
-
+    border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 .history-header h2{
-
     margin:0;
 
-    font-size:28px;
+    font-size:26px;
+    font-weight:700;
 
+    letter-spacing:2px;
+
+    color:#ffffff;
 }
 
+/* =========================
+   TABLE
+========================= */
+
 .history-table{
-
     width:100%;
+}
 
+.table-head,
+.table-row{
+    display:grid;
+
+    grid-template-columns:
+        2fr
+        1.4fr
+        2fr
+        1fr
+        0.8fr;
+
+    align-items:center;
+    border-radius: 10px;
+    border-color: #c6c6c6;
+    padding:18px 30px;
 }
 
 .table-head{
+    color:#8a8a8a;
 
-    display:grid;
-
-    grid-template-columns:
-    2fr
-    1.4fr
-    2fr
-    1fr
-    .8fr;
-
-    padding:18px 30px;
-
-    color:#8b95a7;
-
-    font-size:15px;
-
-    border-bottom:1px solid rgba(255,255,255,.05);
-
+    font-size:13px;
+    letter-spacing:1px;
+    border-bottom: 2px solid rgb(205, 205, 205);
+    border-top: 2px solid rgb(205, 205, 205);
+    border-radius: 0;
 }
 
 .table-row{
+    border:1px solid rgb(64, 64, 64);
+    border-radius: 0;
+    transition:0.25s ease;
 
-    display:grid;
-
-    grid-template-columns:
-    2fr
-    1.4fr
-    2fr
-    1fr
-    .8fr;
-
-    align-items:center;
-
-    padding:22px 30px;
-
-    transition:.25s;
-
-    border-bottom:1px solid rgba(255,255,255,.04);
-
+    color:#eaeaea;
 }
 
 .table-row:hover{
-
-    background:rgba(124,58,237,.08);
-
+    background:rgba(255,255,255,0.08);
 }
 
+/* =========================
+   SUBJECT CELL
+========================= */
+
 .subject-cell{
-
     display:flex;
-
     align-items:center;
-
     gap:12px;
 
+    color:#ffffff;
 }
 
 .subject-icon-small{
-
     width:38px;
-
     height:38px;
 
     border-radius:10px;
 
     display:flex;
-
     justify-content:center;
-
     align-items:center;
 
-    font-size:18px;
+    font-size:16px;
 
+    background:#111111;
+    border:1px solid rgba(255,255,255,0.08);
 }
 
-.physics{
-
-    background:#6d28d9;
-
-}
-
-.math{
-
-    background:#15803d;
-
-}
-
+/* neutral monochrome (no colors) */
+.physics,
+.math,
 .informatics{
-
-    background:#2563eb;
-
+    background:#0d0d0d;
+    border:1px solid rgba(255,255,255,0.1);
 }
+
+/* =========================
+   TASKS COLUMN
+========================= */
 
 .tasks{
-
-    color:#4ade80;
-
+    color:#ffffff;
     font-weight:700;
+    font-size:16px;
 
-    font-size:18px;
-
+    text-shadow:
+        0 0 10px rgba(255,255,255,0.2);
 }
+
+/* =========================
+   EMPTY STATE
+========================= */
 
 .empty-history{
-
     padding:50px;
-
     text-align:center;
 
-    color:#94a3b8;
-
+    color:#777777;
+    letter-spacing:1px;
 }
+
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media(max-width:1100px){
 
-.focus-card{
+    .focus-card{
+        flex-direction:column;
+    }
 
-    flex-direction:column;
+    .focus-right{
+        flex:1 1 0;
+    }
 
-}
+    .timer-circle{
+        width:280px;
+        height:280px;
+    }
 
-.focus-right{
+    .settings-card{
+        flex:1 1 100%;
+    }
 
-    width:100%;
-
-}
-
-.timer-circle{
-
-    width:280px;
-    height:280px;
-
-}
-
+    .info-block{
+        width:100%;
+    }
 }
 
 @media(max-width:700px){
 
-.focus-page{
+    .focus-page{
+        padding:20px;
+    }
 
-    padding:20px;
+    .focus-header{
+        flex-direction:column;
+        gap:20px;
+        align-items:flex-start;
+    }
 
+    .timer{
+        font-size:56px;
+    }
+
+    .buttons{
+        flex-direction:column;
+        width:100%;
+    }
+
+    .buttons button{
+        width:100%;
+    }
+
+    .table-head,
+    .table-row{
+        grid-template-columns:1fr;
+        gap:10px;
+    }
+
+    .subject-cell{
+        justify-content:flex-start;
+    }
 }
 
-.focus-header{
+/* =========================
+   FINAL MICRO GLOW TOUCH
+========================= */
 
-    flex-direction:column;
-    gap:20px;
-    align-items:flex-start;
-
+.focus-page *{
+    transition:0.2s ease;
 }
 
-.timer{
-
-    font-size:52px;
-
+.focus-card,
+.history-card{
+    will-change:transform;
 }
-
-.subject-card{
-
-    flex-direction:column;
-    text-align:center;
-
-}
-
-.buttons{
-
-    flex-direction:column;
-    width:100%;
-
-}
-
-.buttons button{
-
-    width:100%;
-
-}
-
-}
-
 </style>

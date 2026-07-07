@@ -68,7 +68,7 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = sessionStorage.getItem('isLoggedIn') === 'true'
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/auth') // ИСПРАВЛЕНО: перенаправление на существующий путь /auth
+    next('/auth')
   } else if (to.meta.requiresGuest && isAuthenticated) {
     next('/')
   } else {

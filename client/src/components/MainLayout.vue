@@ -1,9 +1,23 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router';
 import api from '@/api';
 
 const router = useRouter()
 
+const isFullscreen = ref(false)
+
+const updateFullscreen = () => {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
+onMounted(() => {
+  document.addEventListener('fullscreenchange', updateFullscreen)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', updateFullscreen)
+})
 // Функция для выхода из аккаунта
 const handleLogout = async () => {
   try {
@@ -25,7 +39,7 @@ const handleLogout = async () => {
     <div class="row">
       <!-- БОКОВАЯ ПАНЕЛЬ -->
       <!-- ДОБАВЛЕНО: классы d-flex flex-column для управления вертикальным пространством -->
-      <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar p-0 shadow min-vh-100 position-fixed d-flex flex-column justify-content-between">
+      <nav v-if="!isFullscreen" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar p-0 shadow min-vh-100 position-fixed d-flex flex-column justify-content-between">
         <div class="position-sticky pt-3 w-100">
           <div class="px-4 py-3 text-white">
             <h2 class="m-0">OnOlympUs</h2>
@@ -99,7 +113,7 @@ const handleLogout = async () => {
 
       <!-- КОНТЕНТ СТРАНИЦЫ -->
       <!-- ДОБАВЛЕНО: Сдвиг контента offset-md-3, чтобы sidebar фиксировано стоял слева и не перекрывал контент -->
-      <main class="col-md-9 ms-sm-auto col-lg-10 offset-md-3 offset-lg-2 min-vh-100 p-0">
+      <main :class="['min-vh-100 p-0', isFullscreen ? 'col-12' : 'col-md-9 ms-sm-auto col-lg-10 offset-md-3 offset-lg-2']">
         <router-view />
       </main>
     </div>

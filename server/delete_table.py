@@ -1,11 +1,11 @@
 from app import app
 from extensions import db
-from models import FocusSession
+from models import Topic
 
 with app.app_context():
     try:
         # Удаляем только таблицу todo
-        FocusSession.__table__.drop(db.engine)
+        Topic.__table__.drop(db.engine)
         print("Таблица FocusSession успешно удалена!")
     except Exception as e:
         print(f"Ошибка при удалении таблицы: {e}")

@@ -7,6 +7,7 @@ import Analytics from '@/components/Analytics.vue'
 import Olympiads from '@/components/Olympiads.vue'
 import MainPage from '@/components/MainPage.vue'
 import Focus from '@/components/Focus.vue'
+import Graph from '@/components/Graph.vue'
 
 
 const router = createRouter({
@@ -51,6 +52,12 @@ const router = createRouter({
           path: 'focus',
           name: 'Focus',
           component: Focus,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'graph',
+          name: 'graph',
+          component: Graph,
           meta: { requiresAuth: true }
         }
       ]

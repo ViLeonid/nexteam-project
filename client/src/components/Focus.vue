@@ -19,20 +19,29 @@
                     <div class="settings-el">
                         <label>Предмет</label>
                         <select v-model="subject">
-                            <option>Физика</option>
-                            <option>Математика</option>
-                            <option>Информатика</option>
+                            <option
+                                v-for="s in subjects"
+                                :key="s.id"
+                                :value="s.name"
+                            >
+                                {{ s.name }}
+                            </option>
                         </select>
                     </div>
-                    
+
                     <div class="settings-el">
                         <label>Тема</label>
-                        <input
-                            v-model="topic"
-                            placeholder="Например: Электростатика"
-                        >
+                        <select v-model="topic">
+                            <option
+                                v-for="t in topics"
+                                :key="t.id"
+                                :value="t.name"
+                            >
+                                {{ t.name }}
+                            </option>
+                        </select>
                     </div>
-                    
+
                     <div class="settings-el">
                         <label>Цель</label>
                         <input
@@ -40,7 +49,7 @@
                             placeholder="Что планируешь сделать?"
                         >
                     </div>
-                    
+
 
                     <div class="tasks-checkbox">
                         <input type="checkbox" v-model="is_tasks">
@@ -57,7 +66,7 @@
                             <option>Бесконечный</option>
                         </select>
                     </div>
-                    
+
                     <div class="settings-el">
                         <label>Фон</label>
                         <select v-model="bg">
@@ -65,7 +74,7 @@
                             <option>Горы</option>
                         </select>
                     </div>
-                    
+
                     <div class="settings-el">
                         <label>Музыка/Шум для концентрации</label>
                         <select v-model="music">
@@ -73,7 +82,7 @@
                             <option>-</option>
                         </select>
                     </div>
-                    
+
 
                 </div>
 
@@ -97,29 +106,29 @@
                                 :stroke-dasharray="circumference"
                                 :stroke-dashoffset="offset"
                             />
-                        
+
                     </svg>
-                    
-                    
+
+
 
                     <div class="timer-content">
 
                         <div class="mode-title">
                             {{ isRunning ? "ФОКУС" : "ГОТОВ" }}
                         </div>
-                        
+
                         <div class="timer">
                             {{ formattedTime }}
                         </div>
                         <div style="display: flex; justify-content: center; gap: 10px; ">
                             <div class="mode">
                                 {{ isRunning ? "Сессия идет..." : "Нажмите начать" }}
-                            </div> 
+                            </div>
                             <div class="mode" v-if="isRunning">
                                 {{ isbreak  ? "Отдых" : "Концентрация" }}
                             </div>
                         </div>
-                        
+
                         <div v-if="isRunning && mode=='Помодоро'" class="mode">Цикл: {{ actual_cycles }}/{{ cycles_count }}</div>
 
                     </div>
@@ -170,24 +179,24 @@
                 >
                     Завершить
                 </button>
-                
+
                 <button
                     class="subtractseconds"
-                    @click="seconds -= 30"
+                    @click="seconds -= 3000"
                     v-if="isRunning"
                 >
                     -30 сек
                 </button>
                 <button
                     class="addseconds"
-                    @click="seconds += 30"
+                    @click="seconds += 30000"
                     v-if="isRunning"
                 >
                     +30 сек
                 </button>
 
                 </div>
-                
+
                 <div
                     class="tasks-counter" :class="{'fullscreenTasks': isfullscreen}"
                     v-if="isRunning && is_tasks"
@@ -287,13 +296,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted, onMounted } from "vue"
+import { ref, computed, onUnmounted, onMounted, watch } from "vue"
 import api from '@/api';
 import infinityImg from '@/assets/infinity3.jpg'
 import { useToast } from "vue-toastification"
 
 
 const subject = ref("Физика");
+const subjects = ref([]);
+const topics = ref([]);
 let seconds = ref(0);
 const topic = ref();
 const goal = ref();
@@ -316,6 +327,10 @@ let tour_time = ref();
 const toast = useToast();
 const isfullscreen = ref(false);
 
+watch(subject, () => {
+    getTopics()
+})
+
 const progress = computed(() => {
     if(mode.value=="Помодоро"){
         if(isbreak.value){
@@ -332,7 +347,7 @@ const progress = computed(() => {
 
     }
 
-    
+
 })
 const timer_h = computed(() => {
     if (isRunning.value){
@@ -387,7 +402,7 @@ function pauseSession(){
 
   isRunning.value=false
 
-  clearInterval(interval)  
+  clearInterval(interval)
 }
 
 function finishSession(){
@@ -404,6 +419,9 @@ const getFS = () => {
   api.get('/api/focus').then(res => { allFS.value = res.data.focus_sessions })
 }
 
+const getTopics = () => {
+  api.get(`/api/get_topics/${subject.value}`).then(res => { topics.value = res.data.topics })
+}
 function toggleFullscreen(){
   if(!document.fullscreenElement){
     isfullscreen.value=true
@@ -414,9 +432,19 @@ function toggleFullscreen(){
   }
 
 }
+const getSubjects = () => {
+    api.get('api/get_subjects').then(res => {
+        subjects.value = res.data.subjects
+        subject.value = subjects.value[0]
+        getTopics()
+    })
+}
 
 onUnmounted(()=>clearInterval(interval));
-onMounted(getFS);
+onMounted(() => {
+    getFS()
+    getSubjects()
+})
 </script>
 
 <style>
@@ -636,7 +664,7 @@ onMounted(getFS);
 }
 
 .focus-card{
-    
+
     display:flex;
     justify-content:space-between;
 
@@ -758,8 +786,8 @@ onMounted(getFS);
 }
 .istimerfocus{
     background-image: url("@/assets/focus_images/fi1.png");
-    background-position: center center; 
-    background-repeat: no-repeat;           
+    background-position: center center;
+    background-repeat: no-repeat;
     background-size: cover;
 }
 

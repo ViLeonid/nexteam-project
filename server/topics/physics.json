@@ -1,0 +1,153 @@
+{
+  "subject": "Физика",
+  "topics": [
+    {
+      "name": "Механика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Кинематика",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Равномерное движение",
+              "type": "subtopic"
+            },
+            {
+              "name": "Равноускоренное движение",
+              "type": "subtopic"
+            },
+            {
+              "name": "Графики движения",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Динамика",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Законы Ньютона",
+              "type": "subtopic"
+            },
+            {
+              "name": "Силы в механике",
+              "type": "subtopic"
+            },
+            {
+              "name": "Трение",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Работа и энергия",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Работа силы",
+              "type": "subtopic"
+            },
+            {
+              "name": "Кинетическая энергия",
+              "type": "subtopic"
+            },
+            {
+              "name": "Потенциальная энергия",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Молекулярная физика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Основы МКТ",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Строение вещества",
+              "type": "subtopic"
+            },
+            {
+              "name": "Количество вещества",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Термодинамика",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Внутренняя энергия",
+              "type": "subtopic"
+            },
+            {
+              "name": "Первый закон термодинамики",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Электродинамика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Электрическое поле",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Закон Кулона",
+              "type": "subtopic"
+            },
+            {
+              "name": "Напряженность поля",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Постоянный ток",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Закон Ома",
+              "type": "subtopic"
+            },
+            {
+              "name": "Электрические цепи",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Оптика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Геометрическая оптика",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Законы отражения",
+              "type": "subtopic"
+            },
+            {
+              "name": "Линзы",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

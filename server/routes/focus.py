@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request, session
 
 from utils import parse_datetime_with_seconds
-from models import FocusSession
+from models import FocusSession, Topic
+from sqlalchemy import func
 from extensions import db
 
 focus_bp = Blueprint(
@@ -14,8 +15,9 @@ def focus():
     current_user_id = session.get('user_id')
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
-    all_fs = FocusSession.query.filter_by().all()
     output = []
+
+    all_fs = FocusSession.query.filter_by().all()
     for fs in all_fs:
             output.append({
                     "id": fs.id,
@@ -28,8 +30,29 @@ def focus():
                     "goal": fs.goal,
                     "count_tasks": fs.count_tasks
                 })
+
+
     return jsonify({'status': 'success', 'focus_sessions': output})
 
+@focus_bp.route('/api/get_topics/<subject>', methods=['GET'])
+def get_topics(subject):
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    topics = Topic.query.filter_by(subject=subject).all()
+
+
+    return jsonify({'status': 'success', 'topics': [{"id": topic.id, "name": topic.name} for topic in topics if topic.name != subject]})
+@focus_bp.route('/api/get_subjects', methods=['GET'])
+def get_subjects():
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    subjects = Topic.query.filter_by(type="subject").all()
+
+    return jsonify({'status': 'success', 'subjects': [{"id": s.id, "name": s.name} for s in subjects]})
 
 @focus_bp.route('/api/add_fs', methods=['POST'])
 def add_fs():

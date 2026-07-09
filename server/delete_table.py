@@ -1,6 +1,6 @@
 from app import app
 from extensions import db
-from models import ActiveFocusSession
+from models import ActiveFocusSession, FocusSession
 from datetime import datetime
 with app.app_context():
     try:

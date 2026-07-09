@@ -27,7 +27,9 @@ def focus():
                 "is_tasks": fs.is_tasks,
                 "topic": fs.topic,
                 "goal": fs.goal,
-                "count_tasks": fs.count_tasks,
+                "bg": fs.bg,
+                "music": fs.music,
+                "count_tasks": fs.count_tasks
             }
         )
 
@@ -41,7 +43,7 @@ def get_active_focus():
         return jsonify({"error": "Неавторизованный доступ"}), 401
     active = ActiveFocusSession.query.filter_by(user_id=current_user_id).first()
     if not active:
-        return jsonify({"active": False})
+        return jsonify({"active": False, "focus": {"status": "notstarted"}})
     return jsonify(
         {
             "active": True,
@@ -52,10 +54,12 @@ def get_active_focus():
                 "subject": active.subject,
                 "start_time": active.start_time,
                 "real_time": active.real_time,
-                "work_started_at": active.work_started_at,
+                "work_started_at": active.work_started_at.isoformat(),
                 "status": active.status,
                 "count_tasks": active.count_tasks,
                 "is_tasks": active.is_tasks,
+                "bg": active.bg,
+                "music": active.music,
             },
         }
     )
@@ -112,12 +116,14 @@ def start_fs():
             goal=fs.get("goal"),
             count_tasks=0,
             user_id=current_user_id,
+            bg=fs.get("bg"),
+            music=fs.get("music")
         )
 
         db.session.add(active_fs)
         db.session.commit()
 
-        return jsonify({"status": "success"})
+        return jsonify({"status": "success", "timer_status": active_fs.status})
 
 
     if request.method == "GET":
@@ -134,10 +140,11 @@ def start_fs():
 
         return jsonify({
             "active": True,
+            "timer_status": active_fs.status,
             "work_started_at": active_fs.work_started_at.isoformat()
         })
 
-@focus_bp.route("/api/focus/pause", methods=["POST"])
+@focus_bp.route("/api/focus/pause", methods=["GET"])
 def pause_fs():
     current_user_id = session.get("user_id")
     if not current_user_id:
@@ -147,10 +154,9 @@ def pause_fs():
     active_fs = ActiveFocusSession.query.filter_by(user_id=current_user_id).first()
     active_fs.status = "paused"
     active_fs.real_time += int((datetime.now() - active_fs.work_started_at).total_seconds())
-
     db.session.add(active_fs)
     db.session.commit()
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success", "timer_status": active_fs.status})
 
 @focus_bp.route("/api/focus/continue", methods=["GET"])
 def continue_fs():
@@ -164,7 +170,7 @@ def continue_fs():
 
     db.session.add(active_fs)
     db.session.commit()
-    return jsonify({"status": "success", "work_started_at": active_fs.work_started_at.isoformat()})
+    return jsonify({"status": "success", "timer_status": active_fs.status, "work_started_at": active_fs.work_started_at.isoformat()})
 
 
 @focus_bp.route("/api/focus/end", methods=["GET", "POST"])
@@ -189,11 +195,13 @@ def end_fs():
         goal=active_fs.goal,
         count_tasks=active_fs.count_tasks,
         user_id=current_user_id,
+        bg=active_fs.bg,
+        music=active_fs.music
     )
     db.session.add(new_fs)
     db.session.delete(active_fs)
     db.session.commit()
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success", "timer_status": "notstarted"})
 
 
 @focus_bp.route("/api/focus/tasks", methods=["POST"])

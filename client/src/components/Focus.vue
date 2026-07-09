@@ -12,7 +12,7 @@
             </button>
         </div>
         <div class="focus-block">
-            <div class="focus-card settings-card" v-if="!isSession">
+            <div class="focus-card settings-card" v-if="(status == 'notstarted')">
 
                 <div class="focus-left">
                     <div class="info-block">
@@ -59,6 +59,7 @@
                         <div class="settings-el">
                             <label>Фон</label>
                             <select v-model="bg">
+                                <option>-</option>
                                 <option>Лес</option>
                                 <option>Горы</option>
                             </select>
@@ -77,11 +78,11 @@
 
                 </div>
             </div>
-            <div class="focus-card timer-card" :class="{ 'istimerfocus': isSession, 'fullscreenFocus': isfullscreen }">
+            <div class="focus-card timer-card" :style="status != 'notstarted' ? { 'background-image': backgrounds[bg] } : ''" :class="{ 'istimerfocus': !(status == 'notstarted'), 'fullscreenFocus': isfullscreen }">
                 <div :class="[isfullscreen ? 'fullscreenRight' : 'focus-right']">
                     <div class="timer-circle" :style="{ height: timer_h + 'px' }">
                         <svg class="progress-ring" width="340" height="340"
-                            v-if="isSession && (mode == 'Помодоро' || mode == 'Пробный тур')">
+                            v-if="!(status == 'notstarted') && (mode == 'Помодоро' || mode == 'Пробный тур')">
 
                             <!-- фон -->
                             <circle class="ring-bg" cx="170" cy="170" r="160" />
@@ -98,7 +99,7 @@
                         <div class="timer-content">
 
                             <div class="mode-title">
-                                {{ isRunning ? "ФОКУС" : "ГОТОВ" }}
+                                {{ status == "running" ? "ФОКУС" : "ГОТОВ" }}
                             </div>
 
                             <div class="timer">
@@ -106,23 +107,23 @@
                             </div>
                             <div style="display: flex; justify-content: center; gap: 10px; ">
 
-                                <div class="mode" v-if="isRunning">
+                                <div class="mode" v-if="status == 'running'">
                                     Сессия идет... {{ isbreak ? "Отдых" : "Концентрация" }}
                                 </div>
-                                <div class="mode" v-else-if="isSession">
+                                <div class="mode" v-else-if="!(status == 'notstarted')">
                                     Пауза
                                     <div>
                                 </div>
                                 </div>
                             </div>
 
-                            <div v-if="isSession && mode == 'Помодоро'" class="mode">Цикл: {{ actual_cycles }}/{{
+                            <div v-if="!(status == 'notstarted') && mode == 'Помодоро'" class="mode">Цикл: {{ actual_cycles }}/{{
                                 cycles_count }}</div>
 
                         </div>
 
                     </div>
-                    <div v-if="!isSession && mode == 'Помодоро'">
+                    <div v-if="(status == 'notstarted') && mode == 'Помодоро'">
                         <div class="pomodoro-timer">
                             <label>Время одного цикла</label>
                             <input type="number" v-model="cycle_time">м
@@ -136,40 +137,40 @@
                             <input type="number" v-model="cycles_count">
                         </div>
                     </div>
-                    <div v-else-if="!isRunning && mode == 'Пробный тур'">
+                    <div v-else-if="!(status == 'running') && mode == 'Пробный тур'">
                         <div class="tour-timer">
                             <label>Время тура</label>
-                            <input type="number" v-model="tour_time">м
+                            <input type="number" v-model="tour_time">
                         </div>
                     </div>
                     <div class="buttons">
 
-                        <button class="start" @click="startSession" v-if="!isRunning && !isSession">
+                        <button class="start" @click="startSession" v-if="!(status == 'running') && (status == 'notstarted')">
                             Начать
                         </button>
 
-                        <button class="continue" @click="continueSession" v-if="!isRunning && isSession">
+                        <button class="continue" @click="continueSession" v-if="!(status == 'running') && !(status == 'notstarted')">
                             Продолжить
                         </button>
 
-                        <button class="pause" @click="pauseSession" v-if="isRunning">
+                        <button class="pause" @click="pauseSession" v-if="(status == 'running')">
                             Пауза
                         </button>
 
-                        <button class="finish" @click="finishSession" v-if="isSession">
+                        <button class="finish" @click="finishSession" v-if="!(status == 'notstarted')">
                             Завершить
                         </button>
 
-                        <button class="subtractseconds" @click="addTime(-30)" v-if="isRunning">
+                        <button class="subtractseconds" @click="addTime(-30)" v-if="(status == 'running')">
                             -30 сек
                         </button>
-                        <button class="addseconds" @click="addTime(30)" v-if="isRunning">
+                        <button class="addseconds" @click="addTime(30)" v-if="(status == 'running')">
                             +30 сек
                         </button>
 
                     </div>
 
-                    <div class="tasks-counter" :class="{ 'fullscreenTasks': isfullscreen }" v-if="isRunning && is_tasks">
+                    <div class="tasks-counter" :class="{ 'fullscreenTasks': isfullscreen }" v-if="(status == 'running') && is_tasks">
 
                         <div class="counter-title">
                             Решено задач
@@ -258,13 +259,21 @@
 import { ref, computed, onUnmounted, onMounted, watch } from "vue"
 import api from '@/api';
 import infinityImg from '@/assets/infinity3.jpg'
+import forestImg from '@/assets/focus_images/fi1.png'
+import mountainsImg from '@/assets/focus_images/fi2.jpeg'
 import { useToast } from "vue-toastification"
 
 
-const subject = ref("Физика");
+const subject = ref();
 const subjects = ref([]);
 const topics = ref([]);
 const isSession = ref(false);
+const backgrounds = {
+    "-": 'none',
+    "Лес": `url(${forestImg})`,
+    "Горы": `url(${mountainsImg})`
+
+}
 let seconds = ref(0);
 const topic = ref();
 const goal = ref();
@@ -272,6 +281,7 @@ const is_tasks = ref();
 const music = ref();
 const real_time = ref(0);
 const bg = ref();
+const status = ref("notstarted");
 const mode = ref("Помодоро");
 const count_tasks = ref(0);
 const isRunning = ref(false);
@@ -279,6 +289,7 @@ let work_started_at = ref();
 let end_time = null;
 const allFS = ref([]);
 let interval = null;
+let afs;
 const radius = 160;
 const circumference = 2 * Math.PI * radius;
 let cycle_time = ref(25);
@@ -309,7 +320,7 @@ const progress = computed(() => {
     }
 })
 const timer_h = computed(() => {
-    if (isSession.value) {
+    if (!(status == 'notstarted')) {
         return 340;
     }
     return 200;
@@ -352,13 +363,16 @@ function startSession() {
             subject: subject.value,
             is_tasks: is_tasks.value,
             topic: topic.value,
-            goal: goal.value}).then({
+            goal: goal.value,
+            bg: bg.value,
+            music: music.value}).then({
 
         }).then(() => {
             isRunning.value = true;
             isSession.value = true;
             api.get('/api/focus/start').then(res => {
                 work_started_at.value = res.data.work_started_at
+                status.value = res.data.timer_status
                 console.log("timer is running")
                 console.log(work_started_at.value)
                 clearInterval(interval);
@@ -378,7 +392,7 @@ function startSession() {
 function pauseSession() {
     isRunning.value = false
     clearInterval(interval)
-    api.post('/api/focus/pause',{})
+    api.get('/api/focus/pause').then(res => {status.value = res.data.timer_status})
     const now = new Date();
     const start = new Date(work_started_at.value);
     real_time.value += Math.floor((now - start) / 1000);
@@ -389,6 +403,7 @@ function continueSession() {
     isRunning.value = true
     api.get('/api/focus/continue').then(res => {
         work_started_at.value = res.data.work_started_at
+        status.value = res.data.timer_status
         clearInterval(interval);
         interval = setInterval(updateTimer, 1000);
     })
@@ -402,19 +417,24 @@ function finishSession() {
     end_time = new Date();
     isRunning.value = false;
     isSession.value = false;
-    api.post('/api/focus/end').then(() => {
+    api.post('/api/focus/end').then(res => {
         getFS();
+        status.value = res.data.timer_status
     });
     count_tasks.value = 0;
     seconds.value = 0;
     real_time.value = 0;
 }
 const getFS = () => {
-    api.get('/api/focus_history').then(res => { allFS.value = res.data.focus_sessions })
+    api.get('/api/focus_history').then(res => {
+        allFS.value = res.data.focus_sessions.sort((a, b) => {
+            return new Date(b.start_time) - new Date(a.start_time);
+        });
+    })
 }
 const updateTimer = () => {
-    console.log(isSession.value , isRunning.value , work_started_at.value)
-    if (isSession.value && isRunning.value && work_started_at.value) {
+    console.log(!(status == 'notstarted') , status.value == "running" , work_started_at.value)
+    if (!(status == 'notstarted') && status.value == "running" && work_started_at.value) {
         const now = new Date();
         const start = new Date(work_started_at.value);
         seconds.value = real_time.value + Math.floor((now - start) / 1000);
@@ -423,7 +443,29 @@ const updateTimer = () => {
 }
 
 const getAFS = () => {
-    api.get('/api/active_focus').then(res => { isSession.value = res.data.active })
+    api.get('/api/active_focus').then(res => {
+        afs = res.data.focus;
+        status.value = afs.status;
+
+        work_started_at.value = afs.work_started_at;
+        count_tasks.value = afs.count_tasks;
+        is_tasks.value = afs.is_tasks;
+        real_time.value = afs.real_time;
+        seconds.value = real_time.value;
+        bg.value = afs.bg;
+        music.value = afs.music;
+        if(status.value == 'running'){
+            clearInterval(interval);
+            topic.value = afs.topic;
+            goal.value = afs.goal;
+            subject.value = afs.subject;
+            interval = setInterval(updateTimer, 1000);
+        }
+        if (status.value == 'notstarted'){
+            real_time.value = 0;
+            seconds.value = 0;
+        }
+    })
 }
 
 
@@ -457,8 +499,9 @@ const getSubjects = () => {
 
 onUnmounted(() => clearInterval(interval));
 onMounted(() => {
-    getFS()
-    getSubjects()
+    getFS();
+    getAFS();
+    getSubjects();
 
 })
 </script>
@@ -805,7 +848,6 @@ onMounted(() => {
 }
 
 .istimerfocus {
-    background-image: url("@/assets/focus_images/fi1.png");
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;

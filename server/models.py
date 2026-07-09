@@ -62,10 +62,12 @@ class FocusSession(db.Model):
     goal = db.Column(db.Text, nullable=True)
     subject = db.Column(db.String(50), nullable=False)
     is_tasks = db.Column(db.Boolean, default=False)
-    count_tasks = db.Column(db.Integer, nullable=True)
+    count_tasks = db.Column(db.Integer, nullable=False, default=0)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     real_time = db.Column(db.Integer, nullable=False)
+    bg = db.Column(db.String(50), nullable=False, default="-")
+    music = db.Column(db.String(50), nullable=False, default="-")
     user_id = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
 
 
@@ -80,7 +82,9 @@ class ActiveFocusSession(db.Model):
     real_time = db.Column(db.Integer, default=0)
     is_tasks = db.Column(db.Boolean, default=False)
     count_tasks = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default="running")
+    bg = db.Column(db.String(50), nullable=False, default="-")
+    music = db.Column(db.String(50), nullable=False, default="-")
+    status = db.Column(db.String(20), default="notstarted")
 
 
 class Topic(db.Model):

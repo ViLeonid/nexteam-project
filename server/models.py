@@ -3,7 +3,6 @@ from extensions import db
 from sqlalchemy.ext.mutable import MutableList
 
 
-
 class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
     username = db.Column(db.String(100), unique=True, nullable=False)
@@ -68,6 +67,20 @@ class FocusSession(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     real_time = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
+
+
+class ActiveFocusSession(db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
+    user_id = db.Column(db.String(36), db.ForeignKey("user.id"), unique=True, nullable=False)
+    topic = db.Column(db.String(100), nullable=False)
+    goal = db.Column(db.Text, nullable=True)
+    subject = db.Column(db.String(50), nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False)
+    work_started_at = db.Column(db.DateTime, nullable=True)
+    real_time = db.Column(db.Integer, default=0)
+    is_tasks = db.Column(db.Boolean, default=False)
+    count_tasks = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default="running")
 
 
 class Topic(db.Model):

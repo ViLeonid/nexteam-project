@@ -161,10 +161,10 @@
                             Завершить
                         </button>
 
-                        <button class="subtractseconds" @click="addTime(-30)" v-if="(status == 'running')">
+                        <button class="subtractseconds" @click="addTime(-3000)" v-if="(status == 'running')">
                             -30 сек
                         </button>
-                        <button class="addseconds" @click="addTime(30)" v-if="(status == 'running')">
+                        <button class="addseconds" @click="addTime(3000)" v-if="(status == 'running')">
                             +30 сек
                         </button>
 
@@ -235,7 +235,7 @@
                     </div>
 
                     <div>
-                        {{ fs.real_time }} сек
+                        {{ Math.floor(fs.real_time / 3600) }}ч {{Math.floor(fs.real_time % 3600 / 60)}}м  {{fs.real_time % 60}}с
                     </div>
 
                     <div class="tasks" v-if="fs.count_tasks != 0">
@@ -258,7 +258,6 @@
 <script setup>
 import { ref, computed, onUnmounted, onMounted, watch } from "vue"
 import api from '@/api';
-import infinityImg from '@/assets/infinity3.jpg'
 import forestImg from '@/assets/focus_images/fi1.png'
 import mountainsImg from '@/assets/focus_images/fi2.jpeg'
 import { useToast } from "vue-toastification"
@@ -344,11 +343,11 @@ const formattedTime = computed(() => {
         m.toString().padStart(2, "0"),
         s.toString().padStart(2, "0")
     ].join(":")
-
 })
 
 const addTasks = (count) => {
     api.post('/api/focus/tasks', {tasks: count});
+    console.log(count_tasks.value)
     count_tasks.value += count;
 }
 const addTime = (count) => {
@@ -446,7 +445,6 @@ const getAFS = () => {
     api.get('/api/active_focus').then(res => {
         afs = res.data.focus;
         status.value = afs.status;
-
         work_started_at.value = afs.work_started_at;
         count_tasks.value = afs.count_tasks;
         is_tasks.value = afs.is_tasks;
@@ -464,6 +462,7 @@ const getAFS = () => {
         if (status.value == 'notstarted'){
             real_time.value = 0;
             seconds.value = 0;
+            count_tasks.value = 0;
         }
     })
 }
@@ -490,7 +489,7 @@ function toggleFullscreen() {
 
 }
 const getSubjects = () => {
-    api.get('api/get_subjects').then(res => {
+    api.get('/api/get_subjects').then(res => {
         subjects.value = res.data.subjects
         subject.value = subjects.value[0]
         getTopics()
@@ -528,9 +527,9 @@ onMounted(() => {
 
     width: 100vw;
     height: 100vh;
-
+    box-shadow: none !important;
     z-index: 99;
-
+    background-color: black;
     border-radius: 0 !important;
     border: 0 !important;
     display: flex;
@@ -730,8 +729,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
 
-    background: rgba(10, 10, 10, 0.72);
-    backdrop-filter: blur(28px);
+    background: rgba(10, 10, 10);
 
     border: 3px solid rgba(208, 208, 208);
     border-radius: 28px;

@@ -7,6 +7,8 @@ import api from '@/api';
 
 const now = ref(Date.now())
 
+const goalName = ref();
+const goalDate = ref();
 let interval
 
 onMounted(() => {
@@ -22,37 +24,43 @@ const events = ref([])
 
 // загрузка событий пользователя
 const fetchEvents = async () => {
-    const res = await api.get('/added_olympiads_events') 
+    const res = await api.get('/added_olympiads_events')
     events.value = res.data.events
 }
 
 onMounted(() => {
     fetchEvents()
 })
-const nearestOlympiad = computed(() => {
-    if (!events.value.length) return null
+const goal = computed(() => {
+    // if (!events.value.length) return null
 
+
+
+    // const futureEvents = events.value
+    //     .map(e => ({
+    //         ...e,
+    //         start: new Date(e.start_time)
+    //     }))
+    //     .filter(e => e.start.getTime() > currentTime)
+    //     .sort((a, b) => a.start - b.start)
+
+    // if (!futureEvents.length) return null
+
+    // const nearest = futureEvents[0]
     const currentTime = now.value
-
-    const futureEvents = events.value
-        .map(e => ({
-            ...e,
-            start: new Date(e.start_time)
-        }))
-        .filter(e => e.start.getTime() > currentTime)
-        .sort((a, b) => a.start - b.start)
-
-    if (!futureEvents.length) return null
-
-    const nearest = futureEvents[0]
-    const diff = nearest.start.getTime() - currentTime
-
-    return {
-        title: nearest.title,
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60)
+    api.get('/api/profile').then(res => {
+        goalName.value = res.data.goal_name;
+        goalDate.value = res.data.goal_date;
+    })
+    if (goalName.value && goalDate.value) {
+        const diff = new Date(goalDate.value).getTime() - currentTime
+        return {
+            title: goalName.value,
+            days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((diff / (1000 * 60)) % 60),
+            seconds: Math.floor((diff / 1000) % 60)
+        }
     }
 })
 </script>
@@ -61,38 +69,48 @@ const nearestOlympiad = computed(() => {
     <h1>Главная</h1>
     <div class="main-wrapper">
         <div class="main-target">
-            <div v-if="nearestOlympiad" class="overlay">
+            <div v-if="goal" class="overlay">
                 <div class="glass-card">
-                <p class="label">Ближайшая олимпиада</p>
-                <h2 class="title">{{ nearestOlympiad.title }}</h2>
+                <p class="label">Главная цель</p>
+                <h2 class="title">{{ goal.title }}</h2>
                 <div class="counter">
                         <div class="remaining-title">Осталось:</div>
                         <div class="time-block">
-                            <span class="num">{{ nearestOlympiad.days }}</span>
+                            <span class="num">{{ goal.days }}</span>
                             <span class="lbl">д</span>
                         </div>
 
                         <div class="time-block">
-                            <span class="num">{{ nearestOlympiad.hours }}</span>
+                            <span class="num">{{ goal.hours }}</span>
                             <span class="lbl">ч</span>
                         </div>
 
                         <div class="time-block seconds">
-                            <span class="num">{{ nearestOlympiad.minutes }}</span>
+                            <span class="num">{{ goal.minutes }}</span>
                             <span class="lbl">м</span>
                         </div>
                         <div class="time-block seconds">
-                            <span class="num">{{ nearestOlympiad.seconds }}</span>
+                            <span class="num">{{ goal.seconds }}</span>
                             <span class="lbl">с</span>
                         </div>
                     </div>
                 </div>
             </div>
 
+
+
             <div v-else class="overlay">
-                <div class="glass-card">
-                <h2 class="title">Нет ближайших олимпиад</h2>
-                <p class="label">Добавь события, чтобы отслеживать их здесь</p>
+                <div class="glass-card empty-goal">
+
+                    <h2 class="title">
+                        Пока нет цели
+                    </h2>
+
+                    <p class="label">
+                        Добавьте цель в профиле и отслеживайте,
+                        сколько времени осталось до её достижения.
+                    </p>
+
                 </div>
             </div>
         </div>
@@ -103,9 +121,30 @@ const nearestOlympiad = computed(() => {
     </div>
 </template>
 <style scoped>
+.empty-goal{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
 
+    min-height:180px;
+    text-align:center;
+}
+
+.empty-goal .title{
+    margin-bottom:10px;
+    font-size:28px;
+}
+
+.empty-goal .label{
+    max-width:340px;
+    line-height:1.6;
+    font-size:15px;
+    color:rgba(255,255,255,.75);
+}
 .main-target{
     width: 700px;
+
     height: 320px;
     position: relative;
     overflow: hidden;
@@ -125,6 +164,7 @@ const nearestOlympiad = computed(() => {
 .analytics-wrapper {
     display: flex;
     margin: 0;
+    gap: 16px;
 }
 .overlay{
     position: absolute;

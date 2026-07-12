@@ -14,7 +14,7 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    
+
     if not username or not password:
         return jsonify({"error": "Заполните все поля"}), 400
     if User.query.filter_by(username=username).first():
@@ -32,7 +32,7 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    
+
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         session['user_id'] = user.id # Записываем сессию

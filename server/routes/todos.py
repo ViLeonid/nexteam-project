@@ -50,7 +50,7 @@ def handle_todos():
             prompt = f"Ты помощник олимпиадника по предмету {subject}. Придумай задачу на сегодня по теме {topic}. Пиши сразу только условие задачи."
             response = giga.chat(prompt)
             content = response.choices[0].message.content
-            
+
             title_text = topic if topic else subject
             new_todo = Todo(
                 title=title_text,
@@ -64,7 +64,7 @@ def handle_todos():
                 description=content,
                 start_time=parse_datetime(data.get('deadline')),
                 end_time=parse_datetime(data.get('deadline')) + timedelta(hours=1),
-                color='purple',
+                color='red',
                 user_id=current_user_id,
                 todo=new_todo
             )
@@ -72,7 +72,7 @@ def handle_todos():
             db.session.add(new_event)
             db.session.commit()
         return jsonify({'status': 'success'})
-    
+
     # ИСПРАВЛЕНО: Забираем задачи ТОЛЬКО текущего залогиненного юзера
     todos = Todo.query.filter_by(user_id=current_user_id).all()
     output = []
@@ -111,7 +111,7 @@ def single_todo(todo_id):
         todo.event.color = 'green' if todo.is_done else 'red'
         db.session.commit()
         return jsonify({'status': 'success'})
-    
+
     if request.method == 'DELETE':
         db.session.delete(todo)
         db.session.commit()

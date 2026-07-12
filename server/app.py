@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
-
+from flask_migrate import Migrate
 
 
 from routes.auth import auth_bp
@@ -12,6 +12,7 @@ from routes.analytics import analytics_bp
 from routes.olympiads import olympiads_bp
 from routes.focus import focus_bp
 from routes.graph import graph_bp
+from routes.profile import profile_bp
 from parsing_olympiads import parse_olympiads
 from extensions import db
 
@@ -24,6 +25,7 @@ app.register_blueprint(analytics_bp)
 app.register_blueprint(olympiads_bp)
 app.register_blueprint(focus_bp)
 app.register_blueprint(graph_bp)
+app.register_blueprint(profile_bp)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -35,6 +37,7 @@ debug_mode = os.getenv("DEBUG") == "True"
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 with app.app_context():
     db.create_all()

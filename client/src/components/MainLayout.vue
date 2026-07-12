@@ -44,7 +44,7 @@ const handleLogout = async () => {
           <div class="px-4 py-3 text-white">
             <h2 class="m-0">OnOlympUs</h2>
           </div>
-          
+
           <hr class="text-secondary mx-3">
 
           <div class="px-3">
@@ -98,7 +98,9 @@ const handleLogout = async () => {
             </h6>
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a href="#" class="nav-link disabled"><i class="bi bi-person me-2"></i> Профиль</a>
+                <router-link to="/profile" class="nav-link" active-class="active">
+                  <i class="bi bi-book me-2"></i> Профиль
+                </router-link>
               </li>
               <li class="nav-item">
                 <a href="#" class="nav-link disabled"><i class="bi bi-gear me-2"></i> Настройки</a>

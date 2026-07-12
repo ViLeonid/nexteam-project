@@ -1,0 +1,281 @@
+{
+  "subject": "Русский язык ЕГЭ",
+  "topics": [
+    {
+      "name": "Орфография",
+      "type": "section",
+      "children": [
+        {
+          "name": "Правописание частей слова",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Безударные гласные и согласные",
+              "type": "subtopic"
+            },
+            {
+              "name": "Приставки",
+              "type": "subtopic"
+            },
+            {
+              "name": "Суффиксы и окончания",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Правописание НЕ и НИ",
+          "type": "topic",
+          "children": [
+            {
+              "name": "НЕ с разными частями речи",
+              "type": "subtopic"
+            },
+            {
+              "name": "Различение НЕ и НИ",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Слитное, дефисное и раздельное написание",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Наречия и служебные части речи",
+              "type": "subtopic"
+            },
+            {
+              "name": "Слова разных частей речи с одинаковым звучанием",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Пунктуация",
+      "type": "section",
+      "children": [
+        {
+          "name": "Знаки препинания в простом предложении",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Однородные члены",
+              "type": "subtopic"
+            },
+            {
+              "name": "Обособленные члены",
+              "type": "subtopic"
+            },
+            {
+              "name": "Вводные слова и обращения",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Сложное предложение",
+          "type": "topic",
+          "children": [
+            {
+              "name": "ССП и знаки между частями",
+              "type": "subtopic"
+            },
+            {
+              "name": "СПП и виды придаточных",
+              "type": "subtopic"
+            },
+            {
+              "name": "Бессоюзные сложные предложения",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Пунктуационный анализ",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Постановка знаков в сложных конструкциях",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Грамматика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Морфология",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Части речи и их признаки",
+              "type": "subtopic"
+            },
+            {
+              "name": "Формы слов и грамматические нормы",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Синтаксис",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Типы предложений",
+              "type": "subtopic"
+            },
+            {
+              "name": "Грамматическая основа",
+              "type": "subtopic"
+            },
+            {
+              "name": "Словосочетания и связи слов",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Лексика и речь",
+      "type": "section",
+      "children": [
+        {
+          "name": "Лексические нормы",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Значение слов",
+              "type": "subtopic"
+            },
+            {
+              "name": "Паронимы",
+              "type": "subtopic"
+            },
+            {
+              "name": "Лексические ошибки",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Выразительные средства языка",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Тропы",
+              "type": "subtopic"
+            },
+            {
+              "name": "Стилистические приемы",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Фонетика и орфоэпия",
+      "type": "section",
+      "children": [
+        {
+          "name": "Звуки и произношение",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Ударение",
+              "type": "subtopic"
+            },
+            {
+              "name": "Произношение звуков и сочетаний",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Работа с текстом",
+      "type": "section",
+      "children": [
+        {
+          "name": "Анализ текста",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Тема и проблема текста",
+              "type": "subtopic"
+            },
+            {
+              "name": "Авторская позиция",
+              "type": "subtopic"
+            },
+            {
+              "name": "Средства связи предложений",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Информационная обработка текста",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Поиск главной информации",
+              "type": "subtopic"
+            },
+            {
+              "name": "Сжатие и преобразование текста",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Сочинение ЕГЭ",
+      "type": "section",
+      "children": [
+        {
+          "name": "Структура сочинения",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Проблема и комментарий",
+              "type": "subtopic"
+            },
+            {
+              "name": "Позиция автора",
+              "type": "subtopic"
+            },
+            {
+              "name": "Собственная позиция и аргументация",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Языковое оформление",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Логика и связность текста",
+              "type": "subtopic"
+            },
+            {
+              "name": "Речевые и грамматические ошибки",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

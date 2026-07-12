@@ -16,6 +16,13 @@ def validate_password(password):
 
     return True
 
+def parse_date(dt_str):
+    if not dt_str:
+        return None
+    try:
+        return datetime.strptime(dt_str, '%Y-%m-%d')
+    except ValueError:
+        return None
 
 def parse_datetime(dt_str):
     if not dt_str:

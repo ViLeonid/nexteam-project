@@ -1,0 +1,275 @@
+{
+  "subject": "Информатика ЕГЭ",
+  "topics": [
+    {
+      "name": "Информация и кодирование",
+      "type": "section",
+      "children": [
+        {
+          "name": "Представление информации",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Системы счисления",
+              "type": "subtopic"
+            },
+            {
+              "name": "Перевод чисел между системами счисления",
+              "type": "subtopic"
+            },
+            {
+              "name": "Кодирование информации",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Количество информации",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Алфавитный подход",
+              "type": "subtopic"
+            },
+            {
+              "name": "Биты и байты",
+              "type": "subtopic"
+            },
+            {
+              "name": "Объем информации",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Логика",
+      "type": "section",
+      "children": [
+        {
+          "name": "Основы логики",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Логические операции",
+              "type": "subtopic"
+            },
+            {
+              "name": "Таблицы истинности",
+              "type": "subtopic"
+            },
+            {
+              "name": "Логические выражения",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Решение логических задач",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Упрощение логических выражений",
+              "type": "subtopic"
+            },
+            {
+              "name": "Методы перебора и анализа условий",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Алгоритмы и программирование",
+      "type": "section",
+      "children": [
+        {
+          "name": "Основы алгоритмизации",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Типы алгоритмов",
+              "type": "subtopic"
+            },
+            {
+              "name": "Условия и циклы",
+              "type": "subtopic"
+            },
+            {
+              "name": "Массивы и структуры данных",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Программирование",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Python и синтаксис языка",
+              "type": "subtopic"
+            },
+            {
+              "name": "Функции и процедуры",
+              "type": "subtopic"
+            },
+            {
+              "name": "Работа со строками",
+              "type": "subtopic"
+            },
+            {
+              "name": "Обработка числовых данных",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Моделирование и анализ данных",
+      "type": "section",
+      "children": [
+        {
+          "name": "Таблицы и базы данных",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Работа с таблицами",
+              "type": "subtopic"
+            },
+            {
+              "name": "Фильтрация и поиск данных",
+              "type": "subtopic"
+            },
+            {
+              "name": "Основы баз данных",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Графы и деревья",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Представление графов",
+              "type": "subtopic"
+            },
+            {
+              "name": "Поиск путей и расстояний",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Компьютерные сети",
+      "type": "section",
+      "children": [
+        {
+          "name": "Основы сетей",
+          "type": "topic",
+          "children": [
+            {
+              "name": "IP-адреса и маски",
+              "type": "subtopic"
+            },
+            {
+              "name": "Адресация в сети",
+              "type": "subtopic"
+            },
+            {
+              "name": "Передача данных",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Архитектура компьютера",
+      "type": "section",
+      "children": [
+        {
+          "name": "Устройство компьютера",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Процессор и память",
+              "type": "subtopic"
+            },
+            {
+              "name": "Файлы и файловые системы",
+              "type": "subtopic"
+            },
+            {
+              "name": "Программное обеспечение",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Информационные процессы",
+      "type": "section",
+      "children": [
+        {
+          "name": "Обработка информации",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Поиск и сортировка данных",
+              "type": "subtopic"
+            },
+            {
+              "name": "Сжатие информации",
+              "type": "subtopic"
+            },
+            {
+              "name": "Хранение информации",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Задачи повышенной сложности",
+      "type": "section",
+      "children": [
+        {
+          "name": "Сложное программирование",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Алгоритмы перебора",
+              "type": "subtopic"
+            },
+            {
+              "name": "Динамическое программирование",
+              "type": "subtopic"
+            }
+          ]
+        },
+        {
+          "name": "Комбинированные задачи ЕГЭ",
+          "type": "topic",
+          "children": [
+            {
+              "name": "Математические модели",
+              "type": "subtopic"
+            },
+            {
+              "name": "Анализ алгоритмов",
+              "type": "subtopic"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

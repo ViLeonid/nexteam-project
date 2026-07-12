@@ -7,16 +7,22 @@ class User(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    todos = db.relationship(
-        "Todo", backref="user", lazy=True, cascade="all, delete-orphan"
-    )
-    events = db.relationship(
-        "Event", backref="user", lazy=True, cascade="all, delete-orphan"
-    )
-    focussessions = db.relationship(
-        "FocusSession", backref="user", lazy=True, cascade="all, delete-orphan"
-    )
+    goal_name = db.Column(db.String(100), nullable=True)
+    goal_date = db.Column(db.DateTime, nullable=True)
+    cycle_work_time = db.Column(db.Integer(), default=25)
+    cycle_break_time = db.Column(db.Integer(), default=5)
+    auto_start = db.Column(db.Boolean(), default=False)
+    subjects = db.relationship('Subject', backref='user', lazy=True, cascade="all, delete-orphan")
+    todos = db.relationship("Todo", backref="user", lazy=True, cascade="all, delete-orphan")
+    events = db.relationship("Event", backref="user", lazy=True, cascade="all, delete-orphan")
+    focussessions = db.relationship("FocusSession", backref="user", lazy=True, cascade="all, delete-orphan")
 
+class Subject(db.Model):
+    __table_args__ = (db.UniqueConstraint("user_id", "name", name="uq_user_subject"),)
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
+    name = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 
 class Todo(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: uuid.uuid4().hex)
@@ -35,15 +41,9 @@ class Event(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     color = db.Column(db.String(20), default="blue")
     user_id = db.Column(db.String(36), db.ForeignKey("user.id"), nullable=False)
-    todo_id = db.Column(
-        db.String(36), db.ForeignKey("todo.id", ondelete="CASCADE"), nullable=True
-    )
-    olympiad_id = db.Column(
-        db.String(36), db.ForeignKey("olympiads.id", ondelete="CASCADE"), nullable=True
-    )
-    todo = db.relationship(
-        "Todo", backref=db.backref("event", uselist=False, cascade="all, delete-orphan")
-    )
+    todo_id = db.Column(db.String(36), db.ForeignKey("todo.id", ondelete="CASCADE"), nullable=True)
+    olympiad_id = db.Column(db.String(36), db.ForeignKey("olympiads.id", ondelete="CASCADE"), nullable=True)
+    todo = db.relationship("Todo", backref=db.backref("event", uselist=False, cascade="all, delete-orphan"))
 
 
 class Olympiads(db.Model):
@@ -62,7 +62,7 @@ class FocusSession(db.Model):
     goal = db.Column(db.Text, nullable=True)
     subject = db.Column(db.String(50), nullable=False)
     is_tasks = db.Column(db.Boolean, default=False)
-    count_tasks = db.Column(db.Integer, nullable=False, default=0)
+    count_tasks = db.Column(db.Integer, default=0)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     real_time = db.Column(db.Integer, nullable=False)

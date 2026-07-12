@@ -9,12 +9,12 @@
         <div class="input-group">
           <label class="txt" for="username">Введите логин:</label>
           <div class="input-wrapper">
-            <input 
+            <input
               id="username"
-              v-model="username" 
-              type="text" 
-              placeholder="Username" 
-              required 
+              v-model="username"
+              type="text"
+              placeholder="Username"
+              required
             />
           </div>
         </div>
@@ -22,12 +22,12 @@
         <div class="input-group">
           <label class="txt" for="password">Введите пароль:</label>
           <div class="input-wrapper"  style="margin-bottom: -0.8rem;">
-            <input 
+            <input
               id="password"
-              v-model="password" 
-              type="password" 
-              placeholder="Password" 
-              required 
+              v-model="password"
+              type="password"
+              placeholder="Password"
+              required
             />
           </div>
           <div class="password-hint" v-show="!isLogin">Пароль состоит из не менее 10 символов, содержит заглавную букву, строчную букву, цифру</div>
@@ -54,31 +54,47 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import api from '@/api';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
+
+// Доступ через route.query.имя_переменной
 
 const router = useRouter()
+const route = useRoute()
 const username = ref('')
 const password = ref('')
-const isLogin = ref(true)
 const error = ref('')
+
+const isLogin = computed({
+  // Читаем из URL
+  get() {
+    return route.query.isLogin === 'true'
+  },
+  // Записываем в URL
+  set(newValue) {
+    router.push({
+      path: '/auth',
+      query: { isLogin: String(newValue) }
+    })
+  }
+})
 
 const handleAuth = async () => {
   error.value = ''
   const url = isLogin.value ? '/api/login' : '/api/register'
-  
+
   try {
     const response = await api.post(url, {
       username: username.value,
       password: password.value
     })
-    
+
     if (isLogin.value) {
       sessionStorage.setItem('isLoggedIn', 'true')
       sessionStorage.setItem('username', response.data.username)
-      router.push('/todos') 
+      router.push('/todos')
     } else {
       alert('Регистрация успешна! Теперь выполните вход.')
       isLogin.value = true
@@ -110,7 +126,7 @@ const handleAuth = async () => {
   max-width: 400px;
   padding: 40px 20px;
   border-radius: 2em;
-  background: rgba(31, 31, 31, 0.7); 
+  background: rgba(31, 31, 31, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 2px solid rgba(123, 123, 123, 0.4);
@@ -185,9 +201,9 @@ const handleAuth = async () => {
   padding: 0 1.2em;
   background-color: #4f4f4f;
   border: 1px solid #cccccc;
-  box-sizing: border-box; 
+  box-sizing: border-box;
   outline: none;
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .submit-btn {

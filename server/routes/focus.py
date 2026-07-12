@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, session
 
 from utils import parse_datetime_with_seconds
-from models import FocusSession, Topic, ActiveFocusSession
+from models import FocusSession, Topic, ActiveFocusSession, Subject
 from datetime import datetime
 from extensions import db
 
@@ -251,12 +251,25 @@ def get_topics(subject):
     )
 
 
+@focus_bp.route("/api/get_all_subjects", methods=["GET"])
+def get_all_subjects():
+    current_user_id = session.get("user_id")
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+    subjects = Topic.query.filter_by(type="subject").all()
+    return jsonify(
+        {
+            "status": "success",
+            "subjects": [{"id": s.id, "name": s.name} for s in subjects],
+        }
+    )
+
 @focus_bp.route("/api/get_subjects", methods=["GET"])
 def get_subjects():
     current_user_id = session.get("user_id")
     if not current_user_id:
         return jsonify({"error": "Неавторизованный доступ"}), 401
-    subjects = Topic.query.filter_by(type="subject").all()
+    subjects = Subject.query.all()
     return jsonify(
         {
             "status": "success",

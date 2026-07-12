@@ -1,5 +1,5 @@
 <template>
-    <div class="roadmap">
+    <div class="roadmap" ref="roadmap">
         <!-- HEADER -->
         <div class="header">
             <select v-model="subject">
@@ -13,11 +13,13 @@
             </select>
             <p>Карта подготовки</p>
         </div>
-        <VueFlow v-model:nodes="nodes" v-model:edges="edges" fit-view :fit-view-options="{padding: 0.25}" :default-viewport="{
-            x: 700,
-            y: 100,
-            zoom: 0.8
-        }">
+        <VueFlow
+            v-model:nodes="nodes"
+            v-model:edges="edges"
+            :nodes-draggable="false"
+            :min-zoom="0.2"
+            :max-zoom="2"
+        >
             <!-- NODE -->
             <template #node-subject="{ data }">
                 <div
@@ -103,28 +105,124 @@
         </VueFlow>
 
         <!-- SIDE PANEL -->
-        <div v-if="selectedTopic" class="panel">
-            <h3>{{ selectedTopic.name }}</h3>
-            <div class="info">
-                <p>Всего времени: <b>{{ selectedTopic.hours }} часов</b></p>
-                <p>Последняя сессия: <br>3 дня назад</p>
-                <p>Количество занятий: <br>8</p>
+        <div
+            v-if="selectedTopic"
+            class="panel"
+        >
+
+            <div class="panel-header">
+
+                <h3>{{ selectedTopic.name }}</h3>
+
+                <span class="level">
+                    Lv. {{ getLevel(selectedTopic.hours) }}
+                </span>
+
             </div>
-            <button>Начать Focus по этой теме</button>
+
+            <div class="progress-block">
+
+                <div class="progress-header">
+
+                    <span>Освоение</span>
+
+                    <b>{{ Math.round(getProgress(selectedTopic.hours)) }}%</b>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+                        class="progress-fill"
+                        :style="{ width: getProgress(selectedTopic.hours) + '%' }"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span class="label">
+                        Время изучения
+                    </span>
+
+                    <span class="value">
+                        {{ selectedTopic.hours }} часов
+                    </span>
+
+                </div>
+
+                <div class="stat">
+
+                    <span class="label">
+                        Последняя сессия
+                    </span>
+
+                    <span class="value">
+                        3 дня назад
+                    </span>
+
+                </div>
+
+                <div class="stat">
+
+                    <span class="label">
+                        Количество занятий
+                    </span>
+
+                    <span class="value">
+                        8
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="materials">
+
+                <div class="materials-title">
+                    Материалы
+                </div>
+
+                <div class="material">
+                    <span>Лекция</span>
+                </div>
+
+                <div class="material">
+                    <span>Конспект</span>
+                </div>
+
+                <div class="material">
+                    <span>Практические задачи</span>
+                </div>
+
+            </div>
+
+            <button class="focus-btn">
+
+                Начать Focus
+
+            </button>
+
         </div>
     </div>
 </template>
 <script setup>
 import { ref, onMounted, watch } from "vue"
-import { VueFlow } from "@vue-flow/core"
+import { VueFlow, useVueFlow } from "@vue-flow/core"
 import api from "@/api"
 import "@vue-flow/core/dist/style.css"
 
 
 const subject = ref();
 const subjects = ref([]);
-
-
+const roadmap = ref();
+const { setViewport } = useVueFlow()
+const rm_width = ref(0)
+const rm_height = ref(0)
 async function loadGraph() {
 
     try {
@@ -224,96 +322,119 @@ const edges = ref([])
 CENTER GRAPH BUILDER
 ========================
 */
-
 /*
 ========================
-TREE LAYOUT
+RADIAL TREE LAYOUT
 ========================
 */
 
 
-const NODE_WIDTH = 200
-const NODE_HEIGHT = 120
-
-const GAP_X = 20
-const GAP_Y = 180
-
-
-
-function calculateWidth(node) {
-
-    if (!node.children || node.children.length === 0) {
-        return NODE_WIDTH
-    }
+const NODE_RADIUS = {
+    subject: 0,
+    section: 400,
+    topic: 800,
+    subtopic: 1200
+}
 
 
-    return node.children.reduce(
-        (sum, child) => sum + calculateWidth(child),
-        0
-    )
-        +
-        GAP_X * (node.children.length - 1)
+
+function getRadius(node){
+
+    if(node.type === "subject")
+        return NODE_RADIUS.subject
+
+    if(node.type === "section")
+        return NODE_RADIUS.section
+
+    if(node.type === "topic")
+        return NODE_RADIUS.topic
+
+    return NODE_RADIUS.subtopic
+
+}
+
+
+
+function countLeaves(node){
+
+    if(!node.children || node.children.length === 0)
+        return 1
+
+
+    return node.children
+        .map(countLeaves)
+        .reduce((a,b)=>a+b,0)
 
 }
 
 
 
 
-
-function createGraphLayout(
+function createRadialLayout(
     node,
-    parent = null,
-    depth = 0,
-    left = 0
-) {
+    parent=null,
+    startAngle=0,
+    endAngle=Math.PI*2
+){
 
 
-    const width = calculateWidth(node)
+    const radius = getRadius(node)
 
 
-
-    const x =
-        left + width / 2 - NODE_WIDTH / 2
-
-
-    const y =
-        depth * NODE_HEIGHT * 2
+    const angle =
+        (startAngle + endAngle) / 2
 
 
 
     nodes.value.push({
 
-        id: String(node.id),
+        id:String(node.id),
 
-        type: node.type ,
+        type:node.type,
 
-        position: {
-            x,
-            y
+        position:{
+
+            x:
+                Math.cos(angle)
+                *
+                radius,
+
+
+            y:
+                Math.sin(angle)
+                *
+                radius
+
         },
 
-        data: node
+
+        data:node
 
     })
 
 
 
-    if (parent) {
+
+
+    if(parent){
 
 
         edges.value.push({
 
-            id: `${parent}-${node.id}`,
+            id:`${parent}-${node.id}`,
 
-            source: String(parent),
+            source:String(parent),
 
-            target: String(node.id),
+            target:String(node.id),
 
-            type: "smoothstep",
+            type:"smoothstep",
 
-            style: {
-                stroke: "#64748b",
-                strokeWidth: 3
+            style:{
+
+                stroke:"#64748b",
+
+                strokeWidth:3
+
             }
 
         })
@@ -322,49 +443,92 @@ function createGraphLayout(
 
 
 
-    if (node.children) {
 
 
-        let childLeft = left
+    if(!node.children ||
+        node.children.length===0)
+
+        return
 
 
-        node.children.forEach(child => {
 
 
-            createGraphLayout(
-                child,
-                node.id,
-                depth + 1,
-                childLeft
-            )
+
+    const total =
+        node.children
+        .map(countLeaves)
+        .reduce(
+            (a,b)=>a+b,
+            0
+        )
 
 
-            childLeft += calculateWidth(child) + GAP_X
 
 
-        })
+    let current=startAngle
 
 
-    }
 
+
+
+    node.children.forEach(child=>{
+
+
+        const sector =
+            (endAngle-startAngle)
+            *
+            countLeaves(child)
+            /
+            total
+
+
+
+
+        createRadialLayout(
+
+            child,
+
+            node.id,
+
+            current,
+
+            current+sector
+
+        )
+
+
+
+        current += sector
+
+
+
+    })
 
 }
 
 
 
 
-function buildGraph(data) {
 
-    nodes.value = []
-    edges.value = []
 
-    const tree = buildTree(data)
+function buildGraph(data){
 
-    tree.forEach(root => {
 
-        const totalWidth = calculateWidth(root)
+    nodes.value=[]
 
-        createGraphLayout(
+    edges.value=[]
+
+
+
+    const tree =
+        buildTree(data)
+
+
+
+    tree.forEach(root=>{
+
+
+        createRadialLayout(
 
             root,
 
@@ -372,15 +536,19 @@ function buildGraph(data) {
 
             0,
 
-            -totalWidth / 2
+            Math.PI*2
 
         )
 
+
+    })
+    setViewport({
+        x: roadmap.value.clientWidth / 2 - 50,
+        y: roadmap.value.clientHeight / 2 - 30,
+        zoom: 0.5
     })
 
 }
-
-
 
 /*
 ========================
@@ -425,15 +593,17 @@ function openTopic(topic) {
     selectedTopic.value = topic
 }
 
-onMounted (() => {
+onMounted(() => {
+
     getSubjects()
+
 })
 </script>
 
 <style scoped>
 .roadmap {
 
-    height: 85vh;
+    height: 100%;
     width: 100%;
 
     position: relative;
@@ -447,7 +617,6 @@ onMounted (() => {
 
     background-color: #111827;
 
-    border-radius: 14px;
 
     overflow: hidden;
 
@@ -477,7 +646,17 @@ onMounted (() => {
     border:2px solid #ff3131;
     background: #1f2937;
     width: 200px;
-    min-height: 110px;}
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subject .title {
+    font-size: 25px !important;
+    text-align: center;
+    width: 100%;
+}
 
 
 .section {
@@ -553,7 +732,7 @@ onMounted (() => {
 }
 
 .empty {
-    opacity: .45;
+    border-color: #484c4c;
 }
 
 .low {
@@ -568,25 +747,265 @@ onMounted (() => {
     border-color: #22c55e;
     box-shadow: 0 0 15px #22c55e55;
 }
+/* ===========================
+   SIDE PANEL
+=========================== */
 
-.panel {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    width: 280px;
-    background: #1f2937;
-    color: white;
-    padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px #0008;
+.panel{
+
+    position:absolute;
+
+    top:20px;
+    right:20px;
+
+    width:330px;
+
+    padding:24px;
+
+    background:#1f2937;
+
+    border:1px solid #374151;
+
+    border-radius:16px;
+
+    color:#fff;
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,.35);
+
+    z-index:20;
+
 }
 
-.panel button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 15px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
+/* ===========================
+   HEADER
+=========================== */
+
+.panel-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:20px;
+
+}
+
+.panel-header h3{
+
+    margin:0;
+
+    font-size:22px;
+
+    font-weight:700;
+
+    line-height:1.3;
+
+}
+
+.level{
+
+    color:#94a3b8;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* ===========================
+   PROGRESS
+=========================== */
+
+.progress-block{
+
+    margin-top:24px;
+
+}
+
+.progress-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.progress-header span{
+
+    color:#94a3b8;
+
+    font-size:13px;
+
+}
+
+.progress-header b{
+
+    font-size:15px;
+
+}
+
+.progress{
+
+    height:8px;
+
+    background:#111827;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+}
+
+.progress-fill{
+
+    height:100%;
+
+    background:#4fdd39;
+
+    border-radius:999px;
+
+    transition:.3s;
+
+}
+
+/* ===========================
+   STATS
+=========================== */
+
+.stats{
+
+    margin-top:26px;
+
+    border-top:1px solid #374151;
+
+}
+
+.stat{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:16px 0;
+
+    border-bottom:1px solid #374151;
+
+}
+
+.label{
+
+    color:#94a3b8;
+
+    font-size:13px;
+
+}
+
+.value{
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:#fff;
+
+}
+
+/* ===========================
+   MATERIALS
+=========================== */
+
+.materials{
+
+    margin-top:24px;
+
+}
+
+.materials-title{
+
+    margin-bottom:14px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+}
+
+.material{
+
+    padding:12px 14px;
+
+    margin-bottom:10px;
+
+    background:#111827;
+
+    border:1px solid #374151;
+
+    border-radius:10px;
+
+    color:#cbd5e1;
+
+    font-size:14px;
+
+    transition:.2s;
+
+}
+
+.material:hover{
+
+    background:#172036;
+
+    border-color:#2563EB;
+
+}
+
+/* ===========================
+   BUTTON
+=========================== */
+
+.focus-btn{
+
+    width:100%;
+
+    margin-top:26px;
+
+    height:46px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#2563EB;
+
+    color:#fff;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.focus-btn:hover{
+
+    background:#1d4ed8;
+
+}
+
+.focus-btn:active{
+
+    transform:scale(.98);
+
 }
 </style>

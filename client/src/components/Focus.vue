@@ -161,7 +161,7 @@
                             Завершить
                         </button>
 
-                        <button class="subtractseconds" @click="addTime(-3000)" v-if="(status == 'running')">
+                        <button class="subtractseconds" @click="addTime(-30)" v-if="(status == 'running')">
                             -30 сек
                         </button>
                         <button class="addseconds" @click="addTime(3000)" v-if="(status == 'running')">
@@ -208,6 +208,7 @@
                     <div>Тема</div>
                     <div>Время</div>
                     <div>Задач</div>
+                    <div></div>
                 </div>
 
                 <div class="table-row" v-for="fs in allFS" :key="fs.id">
@@ -218,11 +219,7 @@
 
                     <div class="subject-cell">
 
-                        <div class="subject-icon-small" :class="{
-                            physics: fs.subject == 'Физика',
-                            math: fs.subject == 'Математика',
-                            informatics: fs.subject == 'Информатика'
-                        }">
+                        <div class="subject-icon-small">
                             📚
                         </div>
 
@@ -238,8 +235,16 @@
                         {{ Math.floor(fs.real_time / 3600) }}ч {{Math.floor(fs.real_time % 3600 / 60)}}м  {{fs.real_time % 60}}с
                     </div>
 
-                    <div class="tasks" v-if="fs.count_tasks != 0">
-                        {{ fs.count_tasks }}
+                    <div class="tasks">
+                        {{ fs.count_tasks || "—" }}
+                    </div>
+                    <div>
+                        <button
+                            class="delete-btn"
+                            @click="deleteFS(fs.id)"
+                        >
+                            ✕
+                        </button>
                     </div>
 
                 </div>
@@ -261,9 +266,44 @@ import api from '@/api';
 import forestImg from '@/assets/focus_images/fi1.png'
 import mountainsImg from '@/assets/focus_images/fi2.jpeg'
 import { useToast } from "vue-toastification"
+import ConfirmToast from "@/components/ConfirmToast.vue"
 
+import { useRoute, useRouter } from 'vue-router'
 
-const subject = ref();
+const route = useRoute()
+const router = useRouter()
+
+const subject = computed({
+    get() {
+        return route.query.subject
+    },
+
+    set(value) {
+        router.push({
+            path: '/focus',
+            query: {
+                ...route.query,
+                subject: value
+            }
+        })
+    }
+})
+
+const topic = computed({
+    get() {
+        return route.query.topic
+    },
+
+    set(value) {
+        router.push({
+            path: '/focus',
+            query: {
+                ...route.query,
+                topic: value
+            }
+        })
+    }
+})
 const subjects = ref([]);
 const topics = ref([]);
 const isSession = ref(false);
@@ -274,7 +314,6 @@ const backgrounds = {
 
 }
 let seconds = ref(0);
-const topic = ref();
 const goal = ref();
 const is_tasks = ref();
 const music = ref();
@@ -291,15 +330,15 @@ let interval = null;
 let afs;
 const radius = 160;
 const circumference = 2 * Math.PI * radius;
-let cycle_time = ref(25);
-let break_time = ref(5);
+let cycle_time = ref();
+let break_time = ref();
 let cycles_count = ref(4);
+let auto_start = ref();
 let tour_time = ref();
 const toast = useToast();
 const isfullscreen = ref(false);
 
 watch(subject, () => {
-    topic.value = undefined
     getTopics()
 })
 
@@ -328,7 +367,12 @@ const isbreak = computed(() => {
     return seconds.value / 60 % (cycle_time.value + break_time.value) > cycle_time.value;
 })
 const actual_cycles = computed(() => {
-    return 1 + Math.trunc(seconds.value / 60 / (cycle_time.value + break_time.value));
+    if (!cycle_time.value || !break_time.value) return 0;
+
+    return Math.min(
+        1 + Math.trunc(seconds.value / 60 / (cycle_time.value + break_time.value)),
+        cycles_count.value
+    );
 })
 const offset = computed(() => {
     return circumference * (1 - progress.value)
@@ -431,13 +475,87 @@ const getFS = () => {
         });
     })
 }
+const deleteFS = (id) => {
+
+    let toastId;
+
+
+    const remove = () => {
+
+        api.delete(`/api/focus_history/${id}`)
+            .then(() => {
+
+                getFS();
+
+                toast.success("Сессия удалена", {
+                    toastClassName: "nexteam-toast"
+                });
+
+            })
+            .catch(() => {
+
+                toast.error("Ошибка удаления", {
+                    toastClassName: "nexteam-toast"
+                });
+
+            });
+
+
+        toast.dismiss(toastId);
+
+    }
+
+
+    const cancel = () => {
+        toast.dismiss(toastId);
+    }
+
+
+    toastId = toast(
+        {
+            component: ConfirmToast,
+
+            props: {
+                message: "Удалить эту фокус-сессию?",
+                onConfirm: remove,
+                onCancel: cancel
+            }
+        },
+        {
+            timeout:false,
+            closeOnClick:false,
+            hideProgressBar:true,
+
+            toastClassName:"nexteam-toast",
+            bodyClassName:"nexteam-toast-body"
+        }
+    );
+
+}
 const updateTimer = () => {
     console.log(!(status == 'notstarted') , status.value == "running" , work_started_at.value)
     if (!(status == 'notstarted') && status.value == "running" && work_started_at.value) {
         const now = new Date();
         const start = new Date(work_started_at.value);
         seconds.value = real_time.value + Math.floor((now - start) / 1000);
-        console.log(seconds.value);
+
+        if (mode.value === "Помодоро") {
+            const totalTime = (cycle_time.value + break_time.value) * cycles_count.value * 60;
+            if (seconds.value >= totalTime) {
+                seconds.value = totalTime;
+                finishSession();
+                return;
+            }
+        }
+
+        if (mode.value === "Пробный тур") {
+            const totalTime = tour_time.value * 60;
+            if (seconds.value >= totalTime) {
+                seconds.value = totalTime;
+                finishSession();
+                return;
+            }
+        }
     }
 }
 
@@ -491,9 +609,25 @@ function toggleFullscreen() {
 const getSubjects = () => {
     api.get('/api/get_subjects').then(res => {
         subjects.value = res.data.subjects
-        subject.value = subjects.value[0]
         getTopics()
     })
+}
+const getTime = async () => {
+    try {
+
+        const res = await api.get("/api/profile");
+
+
+        cycle_time.value = res.data.focus_time ?? focusTime.value;
+        break_time.value = res.data.break_time ?? breakTime.value;
+        auto_start.value = res.data.auto_start ?? autoStart.value;
+
+    }
+    catch (err) {
+
+        console.error("Ошибка загрузки таймера", err);
+
+    }
 }
 
 onUnmounted(() => clearInterval(interval));
@@ -501,11 +635,36 @@ onMounted(() => {
     getFS();
     getAFS();
     getSubjects();
+    getTime();
 
 })
 </script>
 
 <style>
+.delete-btn{
+    width:34px;
+    height:34px;
+
+    padding:0;
+
+    border:none;
+
+    background:transparent;
+
+    color:#888;
+
+    font-size:18px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+}
+
+.delete-btn:hover{
+    background:#181818;
+    color:#ff6666;
+}
+
 .fullscreenTasks {
     margin: 20px;
 }
@@ -627,16 +786,7 @@ onMounted(() => {
     padding: 40px;
     color: #ffffff;
 
-    background:
-        radial-gradient(circle at top,
-            rgba(255, 255, 255, 0.06),
-            transparent 35%),
-
-        radial-gradient(circle at bottom,
-            rgba(255, 255, 255, 0.03),
-            transparent 45%),
-
-        #050505;
+    background: #000000;
 
     overflow: hidden;
     position: relative;
@@ -649,10 +799,6 @@ onMounted(() => {
     inset: 0;
     pointer-events: none;
 
-    background:
-        radial-gradient(circle at center,
-            rgba(255, 255, 255, 0.03),
-            transparent 70%);
 }
 
 /* =========================
@@ -1099,13 +1245,24 @@ onMounted(() => {
 .history-table {
     width: 100%;
 }
-
+.tasks {
+    transform: translateX(21px);
+}
+.subject-cell {
+    transform: translateX(-30px);
+}
+.table-row > div:last-child,
+.table-head > div:last-child {
+    display: flex;
+    justify-content: center;
+}
 .table-head,
 .table-row {
     display: grid;
 
+
     grid-template-columns:
-        2fr 1.4fr 2fr 1fr 0.8fr;
+    2fr 1.4fr 2fr 1fr 0.8fr 50px;
 
     align-items: center;
     border-radius: 10px;
@@ -1163,13 +1320,6 @@ onMounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* neutral monochrome (no colors) */
-.physics,
-.math,
-.informatics {
-    background: #0d0d0d;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 /* =========================
    TASKS COLUMN

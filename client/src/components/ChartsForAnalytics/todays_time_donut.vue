@@ -25,6 +25,7 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   cutout: '75%',
+
   plugins: {
     legend: {
       position: 'bottom',
@@ -32,8 +33,12 @@ const chartOptions = {
         boxWidth: 8,
         usePointStyle: true,
         padding: 12,
-        color: '#4b5563',
+        color: '#e2e8f0',
         font: { size: 12, weight: '500' }
+      },
+      onClick: function(e, legendItem, legend) {
+        // Отменяем стандартное поведение (зачеркивание и скрытие)
+        e.native.stopPropagation();
       }
     },
     tooltip: {
@@ -57,7 +62,7 @@ onMounted(async () => {
         {
           data: data.values,
           backgroundColor: data.colors,
-          borderWidth: 3,
+          borderWidth: 0,
           borderColor: '#fff'
         }
       ]
@@ -78,11 +83,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
 
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #000000;
   border-radius: 16px;
   padding: 16px;
-  
+
 }
 
 h3 {

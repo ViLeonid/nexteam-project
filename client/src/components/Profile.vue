@@ -347,9 +347,9 @@ const GetProfile = async () => {
         console.log(goalDate.value)
 
         login.value = res.data.login;
-        // focusTime.value = res.data.focus_time ?? focusTime.value;
-        // breakTime.value = res.data.break_time ?? breakTime.value;
-        // autoStart.value = res.data.auto_start ?? autoStart.value;
+        focusTime.value = res.data.focus_time ?? focusTime.value;
+        breakTime.value = res.data.break_time ?? breakTime.value;
+        autoStart.value = res.data.auto_start ?? autoStart.value;
 
     }
     catch (err) {
@@ -548,6 +548,10 @@ onMounted(async () => {
 });
 </script>
 <style scoped>
+.goal-buttons{
+    gap: 20px;
+    display: flex;
+}
 .goal_value{
     margin-top:16px;
     padding:18px 20px;

@@ -43,11 +43,46 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: false }
+    legend: {
+      display: false
+    }
   },
   scales: {
-    x: { grid: { display: false } },
-    y: { beginAtZero: true }
+    x: {
+      ticks: {
+        color: '#e2e8f0'
+      },
+      grid: {
+        drawOnChartArea: false,
+        drawTicks: true,        // ВКЛЮЧАЕМ ШТРИХИ
+        tickColor: '#e2e8f0',   // Цвет штрихов
+        tickLength: 6,          // Длина штрихов в пикселях
+        tickWidth: 1           // Толщина штрихов
+      },
+      border: {
+        display: true,
+        color: '#e2e8f0',
+        width: 1
+      }
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        color: '#e2e8f0'
+      },
+      grid: {
+        drawOnChartArea: false,
+        drawTicks: true,        // ВКЛЮЧАЕМ ШТРИХИ
+        tickColor: '#e2e8f0',   // Цвет штрихов
+        tickLength: 6,          // Длина штрихов в пикселях
+        tickWidth: 1            // Толщина штрихов
+      },
+      border: {
+        display: true,
+        color: '#e2e8f0',
+        width: 1
+      }
+    }
   }
 }
 
@@ -76,12 +111,11 @@ onMounted(async () => {
 
 <style scoped>
 .analytics-card {
-  
+
   display: flex;
   flex-direction: column;
   height: 340px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #000000;
   border-radius: 16px;
   padding: 16px;
 }

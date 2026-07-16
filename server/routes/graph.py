@@ -75,7 +75,10 @@ def get_graph_progress(subject):
     result = []
 
     for topic in topics:
-
+        last_session = FocusSession.query.filter_by(user_id=current_user_id, topic=topic.name).order_by(FocusSession.start_time.desc()).first()
+        session_count = FocusSession.query.filter_by(user_id=current_user_id, topic=topic.name).count()
+        if session_count != 0:
+            print(session_count )
         result.append({
 
             "id": topic.id,
@@ -86,8 +89,11 @@ def get_graph_progress(subject):
 
             "parent_id": topic.parent_id,
 
-            "hours": hours_map.get(topic.name, 0)
+            "hours": hours_map.get(topic.name, 0),
 
+            "last_date": last_session.start_time.isoformat() if last_session else None,
+
+            "sessions": session_count
         })
 
     return jsonify(result)

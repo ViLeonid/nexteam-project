@@ -162,7 +162,7 @@
                     </span>
 
                     <span class="value">
-                        3 дня назад
+                        {{formatLastDate(selectedTopic.last_date)}}
                     </span>
 
                 </div>
@@ -174,14 +174,14 @@
                     </span>
 
                     <span class="value">
-                        8
+                        {{ selectedTopic.sessions }}
                     </span>
 
                 </div>
 
             </div>
 
-            <div class="materials">
+            <!-- <div class="materials">
 
                 <div class="materials-title">
                     Материалы
@@ -199,9 +199,9 @@
                     <span>Практические задачи</span>
                 </div>
 
-            </div>
+            </div> -->
 
-            <button class="focus-btn">
+            <button class="focus-btn" @click="goToFocus">
 
                 Начать Focus
 
@@ -216,13 +216,48 @@ import { VueFlow, useVueFlow } from "@vue-flow/core"
 import api from "@/api"
 import "@vue-flow/core/dist/style.css"
 
+import { useRouter } from 'vue-router'
+
 
 const subject = ref();
 const subjects = ref([]);
 const roadmap = ref();
 const { setViewport } = useVueFlow()
-const rm_width = ref(0)
-const rm_height = ref(0)
+const router = useRouter()
+
+
+const goToFocus = () => {
+    console.log('subject:', subject.value)
+    console.log('topic:', selectedTopic.value.name)
+
+    router.push({
+        path: '/focus',
+        query: {
+            subject: subject.value,
+            topic: selectedTopic.value?.name || ''
+        }
+    })
+}
+
+function formatLastDate(lastDate) {
+    if (!lastDate) return "-"
+
+    const now = new Date()
+    const date = new Date(lastDate)
+
+    const diffMs = now - date
+
+    const minutes = Math.floor(diffMs / (1000 * 60))
+    const hours = Math.floor(diffMs / (1000 * 60 * 60))
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (minutes < 1) return "Только что"
+    if (minutes < 60) return `${minutes} мин назад`
+    if (hours < 24) return `${hours} ч назад`
+    if (days === 1) return "1 день назад"
+    if (days <= 4) return `${days} дня назад`
+    return `${days} дней назад`
+}
 async function loadGraph() {
 
     try {
@@ -716,6 +751,7 @@ onMounted(() => {
 .level {
     font-size: 13px;
     margin-top: 5px;
+    min-width: 30px;
 }
 
 .progress {

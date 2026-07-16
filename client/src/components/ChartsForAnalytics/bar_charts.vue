@@ -5,7 +5,7 @@
       <span class="subtitle">Часы</span>
     </div>
 
-    <div v-if="loaded" class="chart-wrapper"> 
+    <div v-if="loaded" class="chart-wrapper">
       <Bar :data="chartData" :options="chartOptions" />
     </div>
     <div v-else class="loading">Загрузка...</div>
@@ -15,13 +15,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Bar } from 'vue-chartjs'
-import { 
-  Chart as ChartJS, 
-  Title, 
-  Tooltip, 
-  Legend, 
-  BarElement, 
-  CategoryScale, 
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
   LinearScale
 } from 'chart.js'
 import api from '@/api'
@@ -36,17 +36,51 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: false }
+    legend: {
+      display: false
+    }
   },
+
+  // Все настройки шкал объединяются в один единственный объект scales
   scales: {
-    x: { grid: { display: false } },
-    y: { beginAtZero: true }
-  },
-  title: {
-    display: true,
-    text: 'Статистика продаж за полгода' // Заголовок
+    x: {
+      ticks: {
+        color: '#e2e8f0'         // Цвет оцифровки оси X
+      },
+      grid: {
+        drawOnChartArea: false,  // Отключаем фоновую сетку
+        drawTicks: true,         // ВКЛЮЧАЕМ ШТРИХИ
+        tickColor: '#e2e8f0',    // Цвет штрихов
+        tickLength: 6,           // Длина штрихов в пикселях
+        tickWidth: 1             // Толщина штрихов
+      },
+      border: {
+        display: true,           // Включаем саму линию оси X
+        color: '#e2e8f0',        // Цвет оси
+        width: 1                 // Толщина оси
+      }
+    },
+    y: {
+      beginAtZero: true,         // Ось Y начинается с нуля
+      ticks: {
+        color: '#e2e8f0'         // Цвет оцифровки оси Y
+      },
+      grid: {
+        drawOnChartArea: false,  // Отключаем фоновую сетку
+        drawTicks: true,         // ВКЛЮЧАЕМ ШТРИХИ
+        tickColor: '#e2e8f0',    // Цвет штрихов
+        tickLength: 6,           // Длина штрихов в пикселях
+        tickWidth: 1             // Толщина штрихов
+      },
+      border: {
+        display: true,           // Включаем саму линию оси Y
+        color: '#e2e8f0',        // Цвет оси
+        width: 1                 // Толщина оси
+      }
+    }
   }
 }
+
 
 
 onMounted(async () => {
@@ -60,12 +94,11 @@ onMounted(async () => {
             label: 'Часы отдыха', // Название столбцов в легенде
             data: data.values,
             backgroundColor: '#3b82f6',
-            borderRadius: 8,          // Скругляет все углы столбца
-            borderRadius: 8,          // Скругляет все углы столбца
+            borderRadius: 12,         // Скругляет все углы столбца
             borderSkipped: false,  // Раскомментируйте, если нужно скруглить и нижние углы тоже
 
             hoverBackgroundColor: '#3b82f6', // Цвет столбца при наведении
-      
+
         }
       ]
     }
@@ -79,10 +112,10 @@ onMounted(async () => {
 
 <style scoped>
 .analytics-card {
-  
+
   display: flex;
   flex-direction: column;
-  height: 340px;
+  height: 400px;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;

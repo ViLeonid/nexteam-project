@@ -276,3 +276,25 @@ def get_subjects():
             "subjects": [{"id": s.id, "name": s.name} for s in subjects],
         }
     )
+@focus_bp.route("/api/focus_history/<string:id>", methods=["DELETE"])
+def delete_focus_session(id):
+    current_user_id = session.get("user_id")
+
+    if not current_user_id:
+        return jsonify({"error": "Неавторизованный доступ"}), 401
+
+    fs = FocusSession.query.filter_by(
+        id=id,
+        user_id=current_user_id
+    ).first()
+
+    if not fs:
+        return jsonify({"error": "Фокус-сессия не найдена"}), 404
+
+    db.session.delete(fs)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Фокус-сессия удалена"
+    })

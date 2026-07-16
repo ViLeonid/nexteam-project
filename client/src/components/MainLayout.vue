@@ -102,9 +102,9 @@ const handleLogout = async () => {
                   <i class="bi bi-book me-2"></i> Профиль
                 </router-link>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a href="#" class="nav-link disabled"><i class="bi bi-gear me-2"></i> Настройки</a>
-              </li>
+              </li> -->
             </ul>
           </div>
         </div>

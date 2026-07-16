@@ -1,0 +1,31 @@
+{
+    "subject": "Математика",
+
+    "topics": [
+
+        {
+            "name": "Алгебра",
+            "type": "section",
+
+            "children": [
+
+                {
+                    "name": "Уравнения",
+                    "type": "topic"
+                },
+
+                {
+                    "name": "Неравенства",
+                    "type": "topic"
+                }
+
+            ]
+        },
+
+        {
+            "name": "Геометрия",
+            "type": "section"
+        }
+
+    ]
+}

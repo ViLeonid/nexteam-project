@@ -12,6 +12,8 @@ class User(db.Model):
     cycle_work_time = db.Column(db.Integer(), default=25)
     cycle_break_time = db.Column(db.Integer(), default=5)
     auto_start = db.Column(db.Boolean(), default=False)
+    ai_text = db.Column(db.String(1000), nullable=True)
+    last_ai_get = db.Column(db.DateTime, nullable=True)
     subjects = db.relationship('Subject', backref='user', lazy=True, cascade="all, delete-orphan")
     todos = db.relationship("Todo", backref="user", lazy=True, cascade="all, delete-orphan")
     events = db.relationship("Event", backref="user", lazy=True, cascade="all, delete-orphan")

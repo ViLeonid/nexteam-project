@@ -263,6 +263,7 @@ const progress = ref(0)
 const goalName = ref();
 const goalDate = ref();
 const ai_response = ref();
+const last_ai_get = ref();
 let interval
 
 onMounted(() => {
@@ -276,11 +277,14 @@ onBeforeUnmount(() => {
     clearInterval(interval);
 })
 
-// загрузка событий пользователя
+
 const fetchGoal = async () => {
     const res = await api.get('/api/profile');
     goalName.value = res.data.goal_name;
     goalDate.value = res.data.goal_date;
+    console.log(res.data.ai_text);
+    ai_response.value = res.data.ai_text;
+    last_ai_get.value = res.data.last_ai_get;
 }
 
 onMounted(() => {

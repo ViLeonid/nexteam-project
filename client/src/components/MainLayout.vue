@@ -127,52 +127,206 @@ const handleLogout = async () => {
   </div>
 </template>
 
-<style>
-.sidebar .nav-link {
-  color: #adb5bd;
-  border-radius: 8px;
-  margin-bottom: 5px;
-  padding: 10px 15px;
+<style scoped>
+.sidebar{
+    background:#050505 !important;
+
+    border-right:2px solid rgba(208,208,208,.18);
+
+    box-shadow:
+        8px 0 30px rgba(0,0,0,.45),
+        inset -1px 0 0 rgba(255,255,255,.05);
+
+    overflow:hidden;
 }
 
-.sidebar .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+/* ---------------- Логотип ---------------- */
+
+.sidebar h2{
+    color:white;
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-1px;
 }
 
-.sidebar .nav-link.active {
-  background-color: #0d6efd !important;
-  color: white !important;
+/* ---------------- Разделители ---------------- */
+
+.sidebar hr{
+    border-color:rgba(255,255,255,.08);
+    opacity:1;
+    margin:20px 16px;
 }
 
-.sidebar-heading {
-  font-size: 0.75rem;
-  font-weight: 700;
+/* ---------------- Заголовки ---------------- */
+
+.sidebar-heading{
+
+    color:#666 !important;
+
+    font-size:11px;
+
+    letter-spacing:2px;
+
+    font-weight:700;
+
+    margin-bottom:14px !important;
 }
 
-hr {
-  opacity: 0.1;
+/* ---------------- Меню ---------------- */
+
+.nav{
+
+    gap:6px;
 }
 
-/* ИСПРАВЛЕНО: Белый/светлый фон вместо черного, чтобы текст карточек задач был читаемым */
-main {
-  background-color: #f8f9fa !important;
+.nav-link{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    height:52px;
+
+    padding:0 18px !important;
+
+    border-radius:16px;
+
+    color:#8c8c8c !important;
+
+    font-size:15px;
+
+    font-weight:500;
+
+    transition:.25s;
 }
 
-/* ДОБАВЛЕНО: Стили для кнопки выхода */
-.btn-logout {
-  color: #dc3545;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+/* ---------------- Иконки ---------------- */
+
+.nav-link i{
+
+    font-size:18px;
+
+    width:20px;
+
+    text-align:center;
+
+    transition:.25s;
 }
 
-.btn-logout:hover {
-  background-color: rgba(220, 53, 69, 0.1);
-  border-color: rgba(220, 53, 69, 0.2);
-  color: #ea868f;
+/* ---------------- Hover ---------------- */
+
+.nav-link:hover{
+
+    background:#101010;
+
+    color:white !important;
+
+    transform:translateX(4px);
+}
+
+.nav-link:hover i{
+
+    color:white;
+}
+
+/* ---------------- Активная ---------------- */
+
+.nav-link.active{
+
+    color:white !important;
+
+    background:#111;
+
+    border:2px solid rgba(208,208,208,.85);
+
+    box-shadow:
+        0 0 18px rgba(180,180,180,.35),
+        inset 0 0 12px rgba(255,255,255,.06);
+}
+
+/* ---------------- Нижняя кнопка ---------------- */
+
+.sidebar>.p-3{
+
+    border-top:1px solid rgba(255,255,255,.08)!important;
+
+    background:#050505 !important;
+}
+
+.btn-logout{
+
+    height:52px;
+
+    display:flex;
+    align-items:center;
+
+    background:#111;
+
+    color:#ff6d6d;
+
+    border:2px solid rgba(255,90,90,.18);
+
+    border-radius:16px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.25s;
+}
+
+.btn-logout:hover{
+
+    background:#181818;
+
+    color:white;
+
+    border-color:#ff5b5b;
+
+    box-shadow:0 0 18px rgba(255,90,90,.22);
+}
+
+.btn-logout i{
+
+    font-size:18px;
+}
+
+/* ---------------- Контент ---------------- */
+
+main{
+
+    background:#080808 !important;
+
+    min-height:100vh;
+}
+
+/* ---------------- Скролл ---------------- */
+
+.sidebar::-webkit-scrollbar{
+
+    width:6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+
+    background:#3a3a3a;
+
+    border-radius:999px;
+}
+
+.sidebar::-webkit-scrollbar-track{
+
+    background:transparent;
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media(max-width:768px){
+
+    .sidebar{
+
+        width:260px;
+    }
+
 }
 </style>

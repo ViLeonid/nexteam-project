@@ -63,8 +63,14 @@ def profile():
     print(current_user.goal_date)
     if current_user.goal_date:
         date = current_user.goal_date.isoformat()[:10]
+    all_text = current_user.ai_text
+    print(current_user.ai_text)
+    sentences=[]
+    for s in all_text.split('/'):
+        sentences.append({"text": s, "checked": False})
     return jsonify({"status": "success", "login": current_user.username, "goal_name": current_user.goal_name, "goal_date": date,
-                    "focus_time": current_user.cycle_work_time, "break_time": current_user.cycle_break_time, "auto_start": current_user.auto_start})
+                    "focus_time": current_user.cycle_work_time, "break_time": current_user.cycle_break_time, "auto_start": current_user.auto_start,
+                    "ai_text": sentences, "last_ai_date": current_user.last_ai_get})
 
 @profile_bp.route('/api/profile/change_password', methods=['POST'])
 def change_password():
@@ -243,8 +249,11 @@ def ai_analytics():
 
     ai_text = response.choices[0].message.content.strip()
 
+    user = User.query.filter_by(id=current_user_id).first()
+    user.ai_text = ai_text
+    user.last_ai_get = datetime.now()
+    db.session.commit()
 
-    # дополнительная защита от слишком длинного ответа
     all_text = ai_text.split('/')
     sentences=[]
     for s in all_text:

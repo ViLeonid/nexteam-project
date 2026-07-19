@@ -6,13 +6,16 @@
     <div class="main-wrapper">
       <div class="container py-5">
         <div class="text-center mb-5">
-          <h1 class="fw-bold display-5 text-dark">Задачи</h1>
+          <h1 class="fw-bold display-5">Задачи</h1>
           <p class="text-muted">Управление задачами и дедлайнами</p>
         </div>
 
         <!-- ФОРМА ДОБАВЛЕНИЯ -->
         <div class="card border-0 shadow-sm mb-4 p-4 rounded-4 bg-white">
           <div class="row g-3 align-items-end">
+            <div class="aitext">
+              Создать свою задачу
+            </div>
             <div class="col-md-3">
               <label class="form-label small fw-bold">ЗАГОЛОВОК</label>
               <input v-model="addForm.title" class="form-control border-0 bg-light py-2" placeholder="Название...">
@@ -31,7 +34,7 @@
           </div>
         </div>
         <!-- ФОРМА ДОБАВЛЕНИЯ С ИИ-->
-        <div class="AIcard card shadow-sm mb-4 p-4 rounded-4 bg-white">
+        <div class="AIcard shadow-sm mb-4 p-4 rounded-4 bg-white">
           <div class="row g-3 align-items-end">
             <div class="aitext">
               Создать задачу с ИИ
@@ -51,10 +54,10 @@
 
 
             <div class="col-md-2">
-              <button 
-                @click="AIaddTodo" 
+              <button
+                @click="AIaddTodo"
                 :disabled="isAILoading"
-                class="btn btn-purple border-0 w-100 fw-bold py-2 shadow-sm rounded-3 text-white d-flex align-items-center justify-content-center gap-2" 
+                class="btn btn-purple border-0 w-100 fw-bold py-2 shadow-sm rounded-3 text-white d-flex align-items-center justify-content-center gap-2"
                 style="background-color: #8b5cf6;"
               >
                 <!-- Если ИИ думает, показываем спиннер загрузки Bootstrap -->
@@ -67,8 +70,8 @@
 
         <!-- ФИЛЬТРАЦИЯ -->
         <div class="d-flex justify-content-center gap-2 mb-5">
-          <button 
-            v-for="f in ['all', 'active', 'done']" 
+          <button
+            v-for="f in ['all', 'active', 'done']"
             :key="f"
             @click="filterStatus = f"
             :class="filterStatus === f ? 'btn-dark' : 'btn-outline-secondary'"
@@ -83,7 +86,7 @@
           <div class="col" v-for="todo in filteredTodos" :key="todo.id">
             <div class="card h-100 border-0 shadow-sm rounded-4 task-card" :class="{'done-task': todo.is_done}">
               <div class="card-body p-4 d-flex flex-column">
-                
+
                 <div class="d-flex justify-content-between align-items-start mb-3">
                   <span :class="todo.is_done ? 'badge bg-success' : 'badge bg-primary'" class="px-3 py-2 rounded-pill">
                     {{ todo.is_done ? 'ВЫПОЛНЕНО' : 'В РАБОТЕ' }}
@@ -95,12 +98,12 @@
 
                 <h4 class="fw-bold mb-2" v-html="renderMixedContent(todo.title)"></h4>
                 <div class="text-muted small flex-grow-1 mb-4" v-html="renderMixedContent(todo.description)"></div>
-              
+
 
                 <div class="deadline-info py-2 mb-4 border-top border-bottom small text-secondary">
                   <i class="bi bi-calendar3 me-2"></i> {{ todo.deadline ? todo.deadline.replace('T', ' | ').replace('-','.').replace('-','.') : 'Без срока' }}
                 </div>
-                
+
                 <div class="d-flex gap-2">
                   <button @click="openEditModal(todo)" class="btn btn-light flex-grow-1 rounded-3 fw-semibold">Изменить</button>
                   <button @click="deleteTodo(todo.id)" class="btn btn-outline-danger border-0 rounded-3">Удалить</button>
@@ -155,9 +158,9 @@ function renderMixedContent(str) {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;')
-      
+
   const regex = /(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g
-  
+
   let lastIndex = 0
   let result = ''
   let match
@@ -263,87 +266,371 @@ const handleEditSubmit = () => {
 
 onMounted(getTodos)
 </script>
-
 <style scoped>
-.aitext{
-  font-weight: 500;
-  font-size: 2rem;
-  display: grid;
-  place-items: center;
-  color: #000000;
-
+.main-wrapper{
+    min-height:100vh;
+    background:#080808;
+    color:#f5f5f5;
+    padding:40px;
 }
+
+/* ---------------- Заголовок ---------------- */
+
+.text-center h1{
+    color:#fff;
+    font-weight:800;
+    font-size:56px;
+    letter-spacing:-2px;
+}
+
+.text-center p{
+    color:#8b8b8b !important;
+    font-size:18px;
+}
+
+/* ---------------- Карточки ---------------- */
+
+.card{
+    background:#070707 !important;
+
+    border:3px solid rgba(208,208,208,.9) !important;
+    border-radius:28px !important;
+
+    box-shadow:
+        0 0 20px rgba(136,136,136,.65),
+        inset 0 0 20px rgba(136,136,136,.22);
+
+    color:white;
+
+    transition:.3s;
+}
+
+.task-card:hover{
+    transform:translateY(-6px);
+
+    box-shadow:
+        0 0 28px rgba(255,255,255,.18),
+        inset 0 0 20px rgba(255,255,255,.08);
+}
+
+/* ---------------- AI карточка ---------------- */
+
 .AIcard{
-  border: 3px solid #000;
-  background: #833AB4;
-  background: linear-gradient(90deg, rgba(131, 58, 180, 1) 0%, rgba(253, 29, 29, 1) 50%, rgba(252, 176, 69, 1) 100%);
-}
-.main-wrapper {
-  background-color: #f0f2f5;
-  min-height: 100vh;
-  width: 100%;
+    position:relative;
+    overflow:hidden;
+
+    background:#070707 !important;
+
+    border:3px solid transparent !important;
+
+    background-image:
+        linear-gradient(#070707,#070707),
+        linear-gradient(90deg,#7b3ff2,#ff4d4d,#ffbf47);
+
+    background-origin:border-box;
+    background-clip:padding-box,border-box;
+
+    box-shadow:
+        0 0 30px rgba(140,92,246,.35);
 }
 
-.task-card {
-  transition: all 0.3s ease;
-  min-height: 380px;
+.aitext{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    margin-bottom:12px;
+
+    font-size:30px;
+    font-weight:700;
+
+    color:white;
 }
 
-.task-card:not(.done-task):hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+/* ---------------- Поля ---------------- */
+
+.form-label{
+    color:#8b8b8b;
+    font-size:13px;
+    font-weight:600;
 }
 
-/* ВЫПОЛНЕННАЯ ЗАДАЧА */
-.task-card.done-task {
-  background-color: #e9ecef !important;
-  transform: none !important;
-  box-shadow: none !important;
+.form-control{
+
+    background:#0b0b0b !important;
+
+    color:white !important;
+
+    border:2px solid rgba(105,105,105,.8) !important;
+
+    border-radius:14px !important;
+
+    transition:.25s;
 }
 
-.done-task h4, .done-task p, .done-task .deadline-info {
-  text-decoration: line-through;
-  color: #adb5bd !important;
+.form-control:focus{
+
+    border-color:white !important;
+
+    box-shadow:
+        0 0 12px rgba(255,255,255,.15);
+
+    background:#0b0b0b;
 }
 
-.done-task .badge.bg-success {
-  background-color: #198754 !important; 
-  color: #fff !important;
-  opacity: 1 !important;
-  filter: none !important;
-}
-.text-container{
-  display: flex;
-  gap: 10px; /* Расстояние между словами */
-  flex-wrap: wrap;
+.form-control::placeholder{
+    color:#666;
 }
 
-.done-task .btn-light {
-  background-color: #dee2e6 !important;
-  color: #6c757d !important;
-  opacity: 0.6;
-  border: none;
+/* ---------------- Кнопки ---------------- */
+
+.btn{
+
+    border-radius:14px !important;
+
+    transition:.25s;
 }
 
-.done-task .btn-outline-danger {
-  opacity: 0.4;
-  border: none !important;
+.btn:hover{
+    transform:translateY(-2px);
 }
 
-.done-task .btn-light:hover, .done-task .btn-outline-danger:hover {
-  opacity: 1;
+.btn-primary{
+
+    background:white !important;
+    color:#111 !important;
+    border:none !important;
 }
 
-/* МОДАЛКА */
-.custom-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9998;
-}
-.custom-modal-box {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 450px; max-width: 90%; z-index: 9999;
+.btn-light{
+
+    background:#141414 !important;
+
+    color:white !important;
+
+    border:2px solid rgba(105,105,105,.8) !important;
 }
 
-.row { margin-right: 0; margin-left: 0; }
+.btn-light:hover{
+
+    border-color:white !important;
+}
+
+.btn-outline-danger{
+
+    background:transparent !important;
+
+    color:#ff5d5d !important;
+
+    border:2px solid rgba(255,90,90,.5) !important;
+}
+
+.btn-outline-danger:hover{
+
+    background:#ff4d4d !important;
+
+    color:white !important;
+}
+
+.btn-purple{
+
+    background:linear-gradient(
+        90deg,#ffd86b,#7d5d07
+    ) !important;
+
+    border:none !important;
+}
+
+/* ---------------- Фильтр ---------------- */
+
+.btn-dark{
+
+    background:white !important;
+
+    color:black !important;
+
+    border:none !important;
+}
+
+.btn-outline-secondary{
+
+    background:transparent !important;
+
+    color:#999 !important;
+
+    border:2px solid rgba(105,105,105,.8) !important;
+}
+
+.btn-outline-secondary:hover{
+
+    color:white !important;
+
+    border-color:white !important;
+}
+
+/* ---------------- Задача ---------------- */
+
+.task-card h4{
+
+    color:white;
+
+    font-size:24px;
+
+    font-weight:700;
+}
+
+.task-card .text-muted{
+
+    color:#b0b0b0 !important;
+
+    line-height:1.7;
+}
+
+.deadline-info{
+
+    color:#8b8b8b;
+
+    border-color:#232323 !important;
+}
+
+/* ---------------- Badge ---------------- */
+
+.badge{
+
+    border-radius:999px;
+
+    padding:10px 18px;
+
+    font-size:12px;
+
+    font-weight:700;
+}
+
+.bg-primary{
+
+    background:white !important;
+
+    color:#111 !important;
+}
+
+.bg-success{
+
+    background:#23c55e !important;
+}
+
+/* ---------------- Switch ---------------- */
+
+.form-check-input{
+
+    width:48px;
+
+    height:24px;
+
+    cursor:pointer;
+
+    background-color:#333;
+
+    border:none;
+}
+
+.form-check-input:checked{
+
+    background-color:#d4d4d4;
+
+    border:none;
+}
+
+/* ---------------- Выполненная ---------------- */
+
+.done-task{
+
+    opacity:.55;
+
+    transform:none !important;
+}
+
+.done-task h4,
+.done-task .text-muted,
+.done-task .deadline-info{
+
+    text-decoration:line-through;
+
+    color:#777 !important;
+}
+
+/* ---------------- Модальное окно ---------------- */
+
+.custom-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.7);
+
+    backdrop-filter:blur(10px);
+
+    z-index:9998;
+}
+
+.custom-modal-box{
+
+    position:fixed;
+
+    top:50%;
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    width:520px;
+    max-width:90%;
+
+    background:#070707 !important;
+
+    color:white;
+
+    border:3px solid rgba(208,208,208,.9);
+
+    border-radius:28px;
+
+    box-shadow:
+        0 0 30px rgba(255,255,255,.15),
+        inset 0 0 20px rgba(255,255,255,.06);
+
+    z-index:9999;
+}
+
+.custom-modal-box textarea{
+
+    resize:none;
+}
+
+.btn-close{
+
+    filter:invert(1);
+}
+
+/* ---------------- Scroll ---------------- */
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#444;
+    border-radius:10px;
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media(max-width:900px){
+
+    .main-wrapper{
+        padding:22px;
+    }
+
+    .text-center h1{
+        font-size:42px;
+    }
+}
 </style>
-

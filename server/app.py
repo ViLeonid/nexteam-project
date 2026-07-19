@@ -34,7 +34,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.secret_key = os.getenv("SECRET_KEY")
 debug_mode = os.getenv("DEBUG") == "True"
 
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+CORS(app, supports_credentials=True)
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -42,4 +42,4 @@ migrate = Migrate(app, db)
 with app.app_context():
     db.create_all()
 if __name__ == '__main__':
-    app.run(debug=debug_mode)
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)

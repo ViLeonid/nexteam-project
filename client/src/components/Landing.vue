@@ -282,7 +282,7 @@
     padding:0 120px;
     gap: 20px;
 
-    background:url("@/assets/landing.jpg") center/cover;
+
 
 }
 
